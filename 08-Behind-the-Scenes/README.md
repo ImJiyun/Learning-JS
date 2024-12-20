@@ -469,3 +469,81 @@ function deleteShoppingCart() {
 - don't use var variables
 - declare variables at the top of each scope
 - declare functions first and use them only after the declaration
+
+---
+
+### `this` Keyword in JavaScript
+
+The `this` keyword is a special variable automatically created for every execution context. Its value depends on **how the function is called**, not where it's defined.
+
+---
+
+#### **Key Points About `this`**
+- **Dynamic nature**: `this` is assigned its value when the function is called.
+- **Not static**: It does not always point to the same thing.
+- **Does not point to**:
+  - The function itself.
+  - The function's variable environment.
+
+---
+
+### Scenarios for `this`
+
+1. **Global Context**
+   ```javascript
+   console.log(this); // `window` object in browsers
+   ```
+
+2. **Method Calls**
+   - When a function is called as a method, `this` points to the object calling the method.
+   ```javascript
+   const obj = {
+     value: 42,
+     showValue: function () {
+       console.log(this.value); // 42
+     },
+   };
+   obj.showValue(); // `this` refers to `obj`
+   ```
+
+3. **Simple Function Calls**
+   - When a regular function is called, `this` depends on the mode:
+     - **Strict mode**: `this` is `undefined`.
+     - **Non-strict mode**: `this` is the global object (`window` in browsers).
+   ```javascript
+   'use strict';
+
+   const func = function () {
+     console.log(this); // undefined
+   };
+
+   func();
+
+   const funcNonStrict = function () {
+     console.log(this); // `window` object in non-strict mode
+   };
+
+   funcNonStrict();
+   ```
+
+4. **Arrow Functions**
+   - **No `this` binding**: Arrow functions inherit `this` from their **lexical parent** (the surrounding function or context).
+   ```javascript
+   const arrowFunc = () => {
+     console.log(this); // `this` refers to the surrounding context
+   };
+
+   arrowFunc(); // `window` in global scope or parent's `this` in a method
+   ```
+
+5. **Event Listeners**
+   - In event handlers, `this` refers to the **DOM element** the listener is attached to.
+   ```javascript
+   const button = document.querySelector('.btn');
+
+   button.addEventListener('click', function () {
+     console.log(this); // DOM element (`button`)
+   });
+   ```
+
+---

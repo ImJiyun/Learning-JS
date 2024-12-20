@@ -73,7 +73,7 @@ function deleteShoppingCart() {
   console.log(`All products deleted!`);
 }
 
-var z = 1;
+var x = 1;
 let y = 2;
 const z = 3;
 
@@ -81,3 +81,51 @@ const z = 3;
 console.log(x === window.x); // true
 console.log(y === window.y); // false
 console.log(z === window.z); // false
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+// this keyword
+console.log(this); // window object
+
+// regular function (not inside object)
+const calculateAge = function (birthYear) {
+  console.log(2037 - birthYear);
+  console.log(this); // undefined (bc this is strict mode)
+};
+
+calculateAge(1991);
+
+// arrow function
+// lexical this keyword : it uses this keyword of its parent scope
+const calculateAgeArrow = birthYear => {
+  console.log(2037 - birthYear);
+  console.log(this); // window
+};
+
+calculateAgeArrow(1991);
+
+// method
+// this : the object calling the method
+const jiyun = {
+  year: 2010,
+  calcAge: function () {
+    console.log(this); // jiyun
+    console.log(2037 - this.year);
+  },
+};
+jiyun.calcAge();
+
+const matilda = {
+  year: 2017,
+};
+
+// method borrowing
+matilda.calcAge = jiyun.calcAge; // copy caclAge method from jiyun to matilda
+matilda.calcAge(); // this keyword = matilda
+
+// this = object that is calling the method,
+// even though this keyword is in jiyun object, it points to matilda object
+
+const f = jiyun.calcAge; // copy the function, it's possible bc function is just a variable
+
+f(); // this keyword = undefined
+// f is a regular function call (there is no owner of f function)
