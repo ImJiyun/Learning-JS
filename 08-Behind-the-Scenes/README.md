@@ -547,3 +547,168 @@ The `this` keyword is a special variable automatically created for every executi
    ```
 
 ---
+### **Arrow Functions and `this` Keyword**
+
+#### Key Concepts
+1. **Arrow functions do not have their own `this`.**
+   - Instead, they inherit `this` from their **lexical parent** (the surrounding function or context).
+2. **Object literals are not scopes.**
+   - The `this` inside an arrow function in an object literal refers to the outer (global) scope, not the object itself.
+3. **`var` declarations create global object properties.**
+   - Using `var` can lead to unexpected behavior when accessing `this`.
+
+---
+
+### **Examples**
+
+#### Example 1: Arrow Function in an Object
+```javascript
+const jonas = {
+  firstName: 'Jonas',
+  year: 1991,
+  calcAge: function () {
+    console.log(this); // `this` refers to `jonas` object
+    console.log(2037 - this.year); // 46
+  },
+  greet: () => {
+    console.log(this); // `this` refers to `window`
+    console.log(`Hey ${this.firstName}`); // Hey undefined
+  },
+};
+
+jonas.greet();
+```
+
+**Explanation**:
+- `calcAge` is a regular function, so `this` refers to the calling object (`jonas`).
+- `greet` is an arrow function:
+  - It does not get its own `this`.
+  - `this` refers to the global scope (`window`), where `this.firstName` is `undefined`.
+
+---
+
+#### Example 2: Arrow Function with `var`
+```javascript
+var firstName = 'Matilda';
+
+const jonas = {
+  firstName: 'Jonas',
+  year: 1991,
+  greet: () => {
+    console.log(this); // `window` object
+    console.log(`Hey ${this.firstName}`); // Hey Matilda
+  },
+};
+
+jonas.greet();
+```
+
+**Explanation**:
+- The `greet` function inherits `this` from the global scope (`window`).
+- Because `var firstName` creates a global property on `window`, `this.firstName` resolves to `'Matilda'`.
+
+---
+
+#### Best Practices
+- **Avoid using arrow functions as methods in objects.**
+- Use regular functions for methods to ensure `this` refers to the calling object.
+
+---
+
+### **Handling `this` in Nested Functions**
+
+#### Example 1: Function Inside a Method (Problem)
+```javascript
+const jonas = {
+  year: 1991,
+  calcAge: function () {
+    console.log(this); // `jonas`
+    console.log(2037 - this.year); // 46
+
+    const isMillenial = function () {
+      console.log(this); // undefined (strict mode)
+      console.log(this.year >= 1981 && this.year <= 1996); // Error
+    };
+
+    isMillenial();
+  },
+};
+
+jonas.calcAge();
+```
+
+**Explanation**:
+- `isMillenial` is a regular function. When called, `this` defaults to `undefined` in strict mode.
+
+---
+
+#### Solutions
+
+1. **Solution 1: Use `self` (or `that`)**
+   ```javascript
+   const jonas = {
+     year: 1991,
+     calcAge: function () {
+       console.log(this); // `jonas`
+
+       const self = this; // Save reference to `this`
+
+       const isMillenial = function () {
+         console.log(self); // `jonas`
+         console.log(self.year >= 1981 && self.year <= 1996); // true
+       };
+
+       isMillenial();
+     },
+   };
+
+   jonas.calcAge();
+   ```
+
+2. **Solution 2: Use an Arrow Function**
+   ```javascript
+   const jonas = {
+     year: 1991,
+     calcAge: function () {
+       console.log(this); // `jonas`
+
+       const isMillenial = () => {
+         console.log(this); // `jonas` (arrow function inherits `this`)
+         console.log(this.year >= 1981 && this.year <= 1996); // true
+       };
+
+       isMillenial();
+     },
+   };
+
+   jonas.calcAge();
+   ```
+
+---
+
+### **Arguments Keyword**
+
+- **Regular Functions**: The `arguments` keyword is available.
+  - It returns an **array-like object** containing the passed arguments.
+- **Arrow Functions**: Do not have access to `arguments`.
+
+#### Example
+```javascript
+const expr = function (a, b) {
+  console.log(arguments); // [2, 3]
+  return a + b;
+};
+
+expr(2, 3);
+expr(2, 3, 4); // [2, 3, 4] (extra arguments accessible)
+
+const arrow = (a, b) => {
+  console.log(arguments); // Error: arguments is not defined
+  return a + b;
+};
+
+arrow(2, 3);
+```
+
+---
+

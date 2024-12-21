@@ -109,7 +109,7 @@ const jiyun = {
   year: 2010,
   calcAge: function () {
     console.log(this); // jiyun
-    console.log(2037 - this.year);
+    // console.log(2037 - this.year);
   },
 };
 jiyun.calcAge();
@@ -129,3 +129,67 @@ const f = jiyun.calcAge; // copy the function, it's possible bc function is just
 
 f(); // this keyword = undefined
 // f is a regular function call (there is no owner of f function)
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+// arrow function
+
+// var firstName = 'Matilda';
+
+const jonas = {
+  firstName: 'Jonas',
+  year: 1991,
+  calcAge: function () {
+    console.log(this); // jonas object
+    console.log(2037 - this.year);
+
+    // solution 1
+    // const self = this; // self or that
+    // const isMillenial = function () {
+    //   console.log(this); // undefined
+    //   // console.log(this.year) >= 1981 && this.year <= 1996;
+    //   console.log(self) >= 1981 && self <= 1996;
+    // };
+
+    // solution 2
+    const isMillenial = () => {
+      console.log(this); // jonas object
+      console.log(this.year) >= 1981 && this.year <= 1996;
+    };
+
+    isMillenial();
+  },
+
+  greet: () => {
+    console.log(this); // window object
+    console.log(`Hey ${this.firstName}`);
+  },
+};
+
+jonas.greet(); // this keyword = undefined
+// arrow function doesn't get its own this keyword
+// it uses this keyword of its parent scope
+// jonas is not a code block, it's an object literal
+// all of the code is in the global scope
+// this = window object -> this.firstName = undefined
+// bc when we try to access a propety that doesn't exist in an object, it returns undefined
+
+// var variables create property on window object
+
+// function inside method
+jonas.calcAge();
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+// arguments keyword
+const expr = function (a, b) {
+  console.log(arguments); // array-like object
+  return a + b;
+}
+
+expr(2, 3)
+expr(2, 3, 4, 5);
+
+const arrow = (a, b) => {
+  console.log(arguments); // reference error
+  return a + b;
+}
+arrow(2, 3);
