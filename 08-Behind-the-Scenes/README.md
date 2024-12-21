@@ -712,3 +712,156 @@ arrow(2, 3);
 
 ---
 
+### JavaScript Memory Lifecycle and Object Copying
+
+#### Memory Lifecycle in JavaScript
+1. **Allocate Memory**:
+   - When a variable is declared and initialized, JavaScript allocates memory for its value.
+   - Primitives and references to objects are stored in different parts of memory:
+     - **Primitives**: Stored in the call stack (variable environment of the execution context).
+     - **Objects**: Stored in the heap, and their references are stored in the call stack.
+
+2. **Use Memory**:
+   - Values are read or modified during the execution of the program.
+
+3. **Release Memory**:
+   - The engine automatically performs garbage collection to release memory that's no longer needed (e.g., unreferenced objects).
+
+#### Objects and References
+- **Objects** are stored in the memory heap.
+- When assigning an object to a new variable, **only the reference** is copied, not the object itself.
+- Modifying a property through one reference reflects in all other references to the same object.
+
+#### Example
+```javascript
+const jessica = { firstName: 'Jessica', lastName: 'Williams' };
+const marriedJessica = jessica;
+
+marriedJessica.lastName = 'Davis';
+console.log(jessica.lastName); // Davis
+```
+- Both `jessica` and `marriedJessica` point to the same object in the heap.
+
+#### Shallow Copy
+- A **shallow copy** duplicates only the top-level properties, not nested objects.
+- Example using the spread operator:
+```javascript
+const jessica2 = { firstName: 'Jessica', family: ['Alice', 'Bob'] };
+const jessicaCopy = { ...jessica2 };
+
+jessicaCopy.family.push('Mary');
+console.log(jessica2.family); // ['Alice', 'Bob', 'Mary']
+```
+- The `family` property in `jessicaCopy` and `jessica2` points to the same array in memory.
+
+#### Deep Copy
+- A **deep copy** duplicates all levels of an object, including nested objects.
+- Methods for deep copying:
+  1. **`structuredClone()`**:
+     - Native JavaScript method for creating deep copies.
+     - Handles nested objects and arrays.
+     ```javascript
+     const jessicaClone = structuredClone(jessica2);
+     jessicaClone.family.push('Mary');
+     console.log(jessica2.family); // ['Alice', 'Bob']
+     ```
+  2. **Third-party libraries** (e.g., `Lodash`'s `cloneDeep`).
+  3. **Manual implementation**:
+     - Recursively copy all properties, but this can get complex for large or circular objects.
+
+#### Passing Objects to Functions
+- When objects are passed as function arguments, their **reference** is passed, not a copy.
+```javascript
+function changeLastName(person, newLastName) {
+  person.lastName = newLastName;
+}
+
+const jessica = { firstName: 'Jessica', lastName: 'Williams' };
+changeLastName(jessica, 'Davis');
+console.log(jessica.lastName); // Davis
+```
+- Modifications in the function affect the original object.
+
+### Memory Management in JavaScript
+
+JavaScript uses **automatic memory management** to handle allocation and deallocation of memory. This is primarily done through the **call stack** and the **heap**.
+
+---
+
+#### **Memory Cleanup**
+1. **Call Stack (Execution Contexts)**:
+   - Each function or block creates an **execution context (EC)** in the call stack.
+   - Once a function completes, its EC is **popped off** the call stack, and its **variable environment** is deleted.
+   - The **Global Execution Context (Global EC)** stays for the lifetime of the application and never disappears.
+
+2. **Heap**:
+   - Objects and other complex data types are stored in the heap.
+   - **Garbage Collection (GC)**: The JavaScript engine uses GC to remove objects in the heap that are no longer needed.
+   - JavaScript uses the **mark-and-sweep algorithm** to manage memory in the heap.
+
+---
+
+#### **Mark-and-Sweep Algorithm**
+1. **Mark Phase**:
+   - Starts with "roots," which are references that are always accessible.
+   - Examples of roots:
+     - Global variables.
+     - Variables in the current call stack.
+     - Closures, event listeners, or timers that hold references.
+   - Objects reachable from these roots are **marked as alive**.
+
+2. **Sweep Phase**:
+   - Any object not marked during the "mark" phase is considered unreachable and is **deleted**.
+   - This memory is reclaimed for future use.
+
+---
+
+#### **Key Notes**
+- Garbage Collection (GC) **cannot be controlled from the code**.
+  - Developers cannot manually trigger or control when and how often GC happens.
+  - It depends on:
+    - The amount of memory the app is using.
+    - System-level memory availability.
+- Globally defined objects **are never garbage collected** because they are always reachable from the global EC.
+- Roots can be **event listeners, timers, closures, etc.**, which remain as long as their references are alive.
+
+---
+
+#### **Memory Leaks**
+A **memory leak** occurs when memory that is no longer needed is **still reachable** and therefore not garbage collected. Common causes:
+1. **Global Variables**:
+   - Accidentally declared global variables or those left in the global scope.
+2. **Event Listeners**:
+   - Not properly removed after use, holding onto references unnecessarily.
+3. **Timers**:
+   - Forgotten `setInterval` or `setTimeout` callbacks that continue running.
+4. **Unreferenced Objects in Closures**:
+   - Objects referenced inside closures remain in memory until the closure itself is cleaned up.
+5. **DOM Nodes**:
+   - Detached DOM nodes (elements removed from the DOM but still referenced in JavaScript).
+
+---
+
+#### **Example of a Memory Leak**
+```javascript
+// Memory leak due to a timer
+function memoryLeakExample() {
+  const bigArray = new Array(1000000).fill('*'); // Large memory allocation
+  setInterval(() => console.log(bigArray[0]), 1000); // Retains reference to bigArray
+}
+memoryLeakExample(); // bigArray will not be garbage collected
+```
+
+---
+
+#### **How to Prevent Memory Leaks**
+1. **Avoid Global Variables**:
+   - Always declare variables with `let`, `const`, or `var` (in older codebases).
+2. **Remove Event Listeners**:
+   - Use `removeEventListener` to clean up unused listeners.
+3. **Clear Timers**:
+   - Use `clearInterval` and `clearTimeout` when timers are no longer needed.
+4. **Detach References**:
+   - Explicitly set references to `null` when objects are no longer needed.
+5. **Use Tools**:
+   - Use browser developer tools to detect memory leaks and debug heap snapshots.

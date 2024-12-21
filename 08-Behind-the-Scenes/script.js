@@ -183,13 +183,75 @@ jonas.calcAge();
 const expr = function (a, b) {
   console.log(arguments); // array-like object
   return a + b;
-}
+};
 
-expr(2, 3)
+expr(2, 3);
 expr(2, 3, 4, 5);
 
 const arrow = (a, b) => {
   console.log(arguments); // reference error
   return a + b;
-}
+};
 arrow(2, 3);
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+// object references
+const jessica = {
+  firstName: 'Jessica',
+  lastName: 'Williams',
+  age: 27,
+};
+// jessica is a reference to the object in the memory heap
+// call stack holds the reference to the object in the memory heap
+
+// copying object
+// const marriedJessica = jessica; // we didn't create a new object, we just copied the reference
+// marriedJessica.lastName = 'Davis';
+
+function marrayPerson(originalPerson, newLastName) {
+  // objects are not copied when we pass them into a function
+  // reference (orginalPerson) is passed to the function
+  originalPerson.lastName = newLastName;
+  return originalPerson;
+}
+
+const marriedJessica = marrayPerson(jessica, 'Davis');
+
+console.log('Before marriage:', jessica); // this original object is also changed
+console.log('After marriage:', marriedJessica);
+
+// what we can't do : assign a new object
+// jessica = {
+//   x : 23;
+// }
+
+jessica.age = 30; // possible bc we're not changing the reference
+
+// copying objects
+const jessica2 = {
+  firstName: 'Jessica',
+  lastName: 'Williams',
+  age: 27,
+  family: ['Alice', 'Bob'],
+};
+
+// shallow copy : only the first level of the object is copied
+const jessicaCopy = { ...jessica2 }; // place all properties of jessica2 into jessicaCopy
+// new object is created in the memory heap
+jessicaCopy.lastName = 'Davis';
+console.log(jessica2, jessicaCopy);
+// but this is not perfect deep copy
+
+jessicaCopy.family.push('Mary');
+jessicaCopy.family.push('John');
+
+console.log('Before', jessica2);
+console.log('After', jessicaCopy);
+
+// deep copy (deep clone)
+const jessicaClone = structuredClone(jessica2);
+jessicaClone.family.push('Mary');
+jessicaClone.family.push('John');
+
+console.log("Original's family", jessica2.family);
+console.log("Clone's family", jessicaClone.family);
