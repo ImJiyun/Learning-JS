@@ -74,3 +74,70 @@ checkIn(flight, jiyun);
 // it's always passing by value
 // we in fact pass in a reference, but that reference itself is still a value
 // It's simply a value that contains a memory address
+
+////////////////////////////////////////////////////////////////////////////////////
+// first-class and higher-order functions
+// functions are simply values
+
+const oneWord = function (str) {
+  return str.replace(/ /g, "").toLowerCase();
+};
+
+const upperFirstWord = function (str) {
+  const [first, ...others] = str.split(" ");
+  return [first.toUpperCase(), ...others].join(" ");
+};
+
+// higher-order function
+// abstraction
+// delegate the string transformation to the other lower lever of functions
+const transformer = function (str, fn) {
+  console.log(`Original string: ${str}`);
+  console.log(`Transformed string: ${fn(str)}`); // calling the function
+  // functions can have properties, just like objects
+  console.log(`Transformed by: ${fn.name}`); // name property
+};
+
+// we are calling transformer function, into which we are passing callback function
+// callback means we don't call them ourselves, but we let them be called later by other functions
+transformer("Javascript is the best!", upperFirstWord); // we are not calling the function here, we are passing the function
+transformer("Javascript is the best!", oneWord);
+
+// JS uses callbacks all the time
+const high5 = function () {
+  console.log("👋");
+};
+
+// high5 is a callback function that JS will call as soon as the event happens
+// addEventListener is a higher-order function
+document.body.addEventListener("click", high5);
+
+// forEach accepts callback function
+// for each of items in array will call callback function
+["Jiyun", "Diane", "Alex"].forEach(high5);
+
+////////////////////////////////////////////////////////////////////////////////////
+// Functions returning functions
+const greet = function (greeting) {
+  return function(name) {
+    console.log(`${greeting} ${name}`);
+  }
+}
+
+const greeterHey = greet("Hey"); // the greeterHey is a value, a function!
+// we can now use the greeter function as if was any other function 
+greeterHey("Jiyun");
+greeterHey("Steven");
+
+// why it works? because of closer
+
+// call it all in one go
+greet("hello")("Jiyun");
+
+const greetArrow = (greeting) => {
+  return (name) => {
+    console.log(`${greeting} ${name}`);
+  }
+}
+
+greetArrow("Hi")("Alex");
