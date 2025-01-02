@@ -151,3 +151,144 @@ setTimeout(() => {
   }, 1000);
 }, 1000);
 ```
+---
+### **Promise and Fetch API**
+
+#### **Promise**
+- **ES6 Feature**: Introduced in ES6, promises provide a cleaner and more manageable way to handle asynchronous operations.
+- **Purpose**: A Promise is an object that serves as a placeholder for a value that is initially unknown but will be available in the future.
+  - It is a container for an asynchronously delivered value.
+  - Think of it as a container for a "future value."
+
+#### **When is a Promise Useful?**
+- When initiating an asynchronous task (like an AJAX call), there is no value immediately, but we know that a value will be returned eventually.
+- Promises provide a way to handle this future value when it arrives.
+
+#### **Analogy**: 
+- A Promise is like a lottery ticket. You purchase the ticket (start the asynchronous operation), and you don’t know if you’ll win (whether the result will be successful or not), but you can claim your prize (use the value) when it arrives.
+
+#### **Advantages of Using Promises**
+- **Avoiding Callback Hell**: Promises allow us to chain asynchronous operations without deeply nesting callback functions, making code cleaner and easier to maintain.
+- **Better Handling**: Instead of relying on events and callbacks passed into asynchronous functions, Promises give us a structured way to handle asynchronous results.
+
+---
+
+#### **Lifecycle of a Promise**
+A Promise goes through different states during its lifecycle:
+
+1. **Pending**:  
+   - This is the initial state. The promise is in progress, and the asynchronous task is still running.  
+   - At this point, there is no value yet, but the promise indicates that a result will be provided eventually.
+
+2. **Settled**:  
+   - The promise has completed the asynchronous task, but it could have two possible outcomes:
+     - **Fulfilled**: The asynchronous operation was successful, and the value is now available.
+     - **Rejected**: An error occurred during the asynchronous operation, and the promise could not be fulfilled.
+
+- **Note**: Once a promise is settled (either fulfilled or rejected), it cannot change its state. This means that the promise is **immutable** after it settles.
+
+---
+### **Code Example**
+
+1. **Basic Fetch Request**  
+   The `fetch()` function returns a Promise, which is in a pending state until it is fulfilled (or rejected). Example:
+
+   ```javascript
+   const request = fetch('https://restcountries.com/v3.1/name/portugal'); // GET request
+   console.log(request); // Logs a pending Promise
+   ```
+
+2. **Consuming the Promise**  
+   We can use `.then()` to handle the Promise once it is fulfilled:
+
+   ```javascript
+   const getCountryData = function (country) {
+     const request = fetch(`https://restcountries.com/v3.1/name/${country}`)
+       .then(response => {
+         console.log(response);
+         return response.json(); // .json() returns a Promise
+       })
+       .then(data => {
+         console.log(data);
+         renderCountry(data[0]); // Handle the data
+       });
+   };
+   ```
+
+3. **Chaining Promises**  
+   We can chain `.then()` methods to handle sequential operations:
+
+   ```javascript
+   getCountryData('portugal');
+   ```
+
+4. **Handling Errors with `.catch()`**  
+   Use `.catch()` to handle any rejected promises:
+
+   ```javascript
+   const getJSON = function (url, errorMsg = 'Something went wrong') {
+     return fetch(url)
+       .then(response => {
+         if (!response.ok) {
+           throw new Error(`${errorMsg} (${response.status})`); // Manually throw error
+         }
+       });
+   };
+   ```
+
+5. **Handling Multiple Promises Sequentially**  
+   When handling multiple promises, we can chain them, ensuring each request runs in sequence:
+
+   ```javascript
+   const getCountryDataArr = country => {
+     getJSON(`https://restcountries.com/v3.1/name/${country}`, 'Country not found')
+       .then(data => {
+         renderCountry(data[0]);
+         const neighbour = data[0].borders[0];
+
+         if (!neighbour) throw new Error('No neighbour found!'); // Throw error if no neighbour
+
+         return getJSON(`https://restcountries.com/v3.1/alpha/${neighbour}`, 'Country not found');
+       })
+       .then(data => renderCountry(data[0], 'neighbour'))
+       .catch(err => {
+         console.error(`${err} 💥💥💥`);
+         renderError(`Something went wrong 💥💥 ${err.message}. Try again!`);
+       })
+       .finally(() => {
+         countriesContainer.style.opacity = 1; // Final cleanup
+       });
+   };
+
+   getCountryDataArr('Belgium');
+   ```
+
+6. **Handling Rejected Promises**  
+   `fetch()` will only reject a promise if there is a network issue. We can catch errors using `.catch()`:
+
+   ```javascript
+   btn.addEventListener('click', function () {
+     getCountryDataArr('Netherlands');
+   });
+   ```
+
+   - The **first `.then()` callback** handles the fulfilled promise.
+   - The **second `.then()` callback** handles the rejected promise, though fetch rarely rejects unless there's a network error.
+
+7. **Global Error Handling**  
+   If any error is thrown within the promise chain, it will propagate until it is caught by `.catch()`:
+
+   ```javascript
+   getCountryDataArr('asefae'); // This triggers a 404 error
+   ```
+
+8. **The `.finally()` Method**  
+   `.finally()` always runs, regardless of whether the promise is fulfilled or rejected. It is useful for tasks such as cleaning up after the operation, for example, hiding a loading spinner:
+
+   ```javascript
+   .finally(() => {
+     countriesContainer.style.opacity = 1; // Reset UI
+   });
+   ```
+
+---
