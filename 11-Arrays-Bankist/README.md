@@ -180,3 +180,77 @@ console.log(max); // 3000
    - Example: Calculating the total balance from an array of deposits and withdrawals.
 
 --- 
+## Sorting Arrays in JavaScript
+
+### Sorting Strings
+```javascript
+const owners = ['Jonas', 'Zach', 'Adam', 'Martha'];
+owners.sort(); // Mutates the original array
+console.log(owners); // ['Adam', 'Jonas', 'Martha', 'Zach']
+```
+
+---
+
+### Sorting Numbers
+#### Default `.sort()` Behavior
+- By default, `.sort()` converts numbers to strings and sorts them lexicographically.  
+- This approach doesn't work as expected for numerical sorting.  
+
+```javascript
+const movements = [200, -100, 50, -75, 300];
+console.log(movements);
+// console.log(movements.sort()); // Not suitable for numbers
+```
+
+---
+
+### Custom Sorting with Compare Function
+
+#### Logic of the Compare Function
+- **Parameters**: `a` (current element) and `b` (next element).  
+- **Return Values**:
+  - `< 0`: Keeps the order (A, B).
+  - `> 0`: Switches the order (B, A).
+
+#### Ascending Order
+```javascript
+movements.sort((a, b) => {
+  if (a > b) return 1; // Switch order
+  if (a < b) return -1; // Keep order
+});
+console.log(movements); // [-100, -75, 50, 200, 300]
+```
+
+**Simplified Version**:
+```javascript
+movements.sort((a, b) => a - b); // a - b ensures ascending order
+console.log(movements); // [-100, -75, 50, 200, 300]
+```
+
+---
+
+#### Descending Order
+```javascript
+movements.sort((a, b) => {
+  if (a > b) return -1; // Keep order
+  if (a < b) return 1;  // Switch order
+});
+console.log(movements); // [300, 200, 50, -75, -100]
+```
+
+**Simplified Version**:
+```javascript
+movements.sort((a, b) => b - a); // b - a ensures descending order
+console.log(movements); // [300, 200, 50, -75, -100]
+```
+
+---
+
+### Key Points
+1. **Default `.sort()` Behavior**:
+   - Works well for strings but not for numbers due to lexicographical sorting.
+2. **Custom Compare Function**:
+   - Ascending order: Use `a - b`.
+   - Descending order: Use `b - a`.
+3. **Mutation**:
+   - The `.sort()` method **mutates** the original array instead of returning a new one.

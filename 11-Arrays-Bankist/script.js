@@ -281,3 +281,39 @@ const max = movements.reduce((acc, mov) => {
 }, movements[0]);
 
 console.log(max);
+
+///////////////////////////////////////////////////////////////////////////////////
+// sorting arrays
+// strings
+const owners = ['Jonas', 'Zach', 'Adam', 'Martha'];
+owners.sort(); // mutates the original array
+console.log(owners);
+
+// numbers
+console.log(movements);
+// console.log(movements.sort()); // doesn't work as expected
+// sort method only works with strings
+// it converts the numbers to strings and then sort them
+
+movements.sort((a, b) => {
+  // 1st param : current element
+  // 2nd param : next element
+  // return < 0, A, B (keep order)
+  // return > 0, B, A (switch order)
+  // ascending order
+  if (a > b) return 1;
+  if (a < b) return -1;
+});
+console.log(movements);
+// simplified version
+movements.sort((a, b) => a - b); // ascending order
+
+// descending order
+movements.sort((a, b) => {
+  if (a > b) return -1;
+  if (a < b) return 1;
+});
+
+console.log(movements);
+// simplified version
+movements.sort((a, b) => b - a); // descending order
