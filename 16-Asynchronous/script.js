@@ -255,6 +255,135 @@ btn.addEventListener('click', function () {
 // finally method is used to do some clean-up work
 // it's useful for example to hide a loading spinner
 
-getCountryDataArr('asefae');
+// getCountryDataArr('asefae');
 // with 404 error, the fetch promise will still get fulfilled
 // the catch method will be called only when there is a network error
+
+////////////////////////////////////////////////////////////////////
+// event loop in practice
+console.log('Test start'); // 1
+setTimeout(() => console.log('0 sec timer', 0)); // 5
+// timer is not a guaranteed time, it's a minimum time
+Promise.resolve('Resolved promise 1').then(res => console.log(res)); // 3
+// create a promise that is immediately resolved
+// setTimeout and promises finish at the same time, but promises are executed first (because they are microtasks)
+
+Promise.resolve('Resolved promise 2').then(res => {
+  // Promise itself will be resolved immediately
+  // microtasks will be put on the microtask queue, and it will take some time
+  for (let i = 0; i < 1000000000; i++) {}
+  // the timer above will take a longer time than 0 seconds to execute console.log
+  console.log(res);
+}); // 4
+
+console.log('Test end'); // 2
+
+// code outside of any callback function is executed first
+// callbacks related to web APIs go to the web API section and then to callback queue
+// the event loop takes the callback from the callback queue and executes it
+// fetch goes to microtask queue
+
+///////////////////////////////////////////////////////////////////
+// Async and Await
+const getPosition = function () {
+  return new Promise(function (resolve, reject) {
+    navigator.geolocation.getCurrentPosition(resolve, reject);
+  });
+};
+// async functions are running in the background and when they are done, they will return a promise
+const whereAmI = async function () {
+  try {
+    // Geolocation
+    const pos = await getPosition();
+    const { latitude: lat, longitude: lng } = pos.coords;
+
+    // Reverse geocoding
+    const resGeo = await fetch(
+      `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}`,
+    );
+    // resGeo is a response object that has ok property
+    if (!resGeo.ok) throw new Error('Problem getting location data');
+
+    const dataGeo = await resGeo.json();
+    console.log(dataGeo);
+
+    // Country data
+    // await will pause the execution of the function until the promise is settled
+    const res = await fetch(
+      `https://restcountries.com/v3.1/alpha/${dataGeo.countryCode}`,
+    );
+    // it's not blocking the main thread of execution because the function is running asynchronously
+    // await will wait for the promise to be settled
+    // async and await are syntactic sugar over then method
+    if (!res.ok) throw new Error('Problem getting country');
+
+    const data = await res.json(); // json is a method that converts the response to json object and it returns a promise
+    console.log(data);
+    renderCountry(data[0]);
+
+    return `You are in ${dataGeo.city}, ${dataGeo.country}`;
+  } catch (err) {
+    console.error(`${err} 💥💥💥`);
+    // err is an object that contains the error message
+    renderError(`💥 ${err.message}`);
+
+    // rethrow the error so that the promise returned by the async function will be rejected
+    throw err;
+  }
+};
+console.log('1: Will get location');
+const city = whereAmI(); // this function is loaded in the background. JavaScript will immediately move to the next line of code
+console.log(city); // this will be pending because the function is still running in the background
+
+// below code mixes async/await with then method -> not recommended
+/*
+whereAmI()
+  .then(city => console.log(`2: ${city}`))
+  .catch(err => console.error(`2: ${err.message}`))
+  .finally(() => console.log('3: Finished getting location'));
+  */
+// the argument of the then method is the result value of the async function
+
+// IIFE : Immediately Invoked Function Expression
+(async function () {
+  try {
+    const city = await whereAmI();
+    console.log(`2: ${city}`);
+  } catch (err) {
+    console.error(`2: ${err.message}`);
+  }
+  console.log('3: Finished getting location');
+})();
+
+console.log('2: Finished getting location');
+
+// error handling with async/await
+// try / catch block has nothing to do with promises
+// it's just a way to handle errors in JavaScript
+// we have to manually throw an error in the async function (for other than network errors)
+
+// running promises in parallel
+const get3Countries = async function (c1, c2, c3) {
+  try {
+    const [data1] = await getJSON(`https://restcountries.com/v3.1/name/${c1}`);
+    const [data2] = await getJSON(`https://restcountries.com/v3.1/name/${c2}`);
+    const [data3] = await getJSON(`https://restcountries.com/v3.1/name/${c3}`);
+
+    console.log([data1.capital, data2.capital, data3.capital]);
+
+    // Promise.all method
+    // takes an array of promises and returns a new promise
+    // run all promises at the same time
+    const data = Promise.all(
+      getJSON(`https://restcountries.com/v3.1/name/${c1}`),
+      getJSON(`https://restcountries.com/v3.1/name/${c2}`),
+      getJSON(`https://restcountries.com/v3.1/name/${c3}`),
+    );
+    // if one of promises is rejected, the whole promise returned by Promise.all will be rejected
+    console.log((await data).map(d => d[0].capital));
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+get3Countries('norway', 'canada', 'netherlands');

@@ -151,36 +151,44 @@ setTimeout(() => {
   }, 1000);
 }, 1000);
 ```
+
 ---
+
 ### **Promise and Fetch API**
 
 #### **Promise**
+
 - **ES6 Feature**: Introduced in ES6, promises provide a cleaner and more manageable way to handle asynchronous operations.
 - **Purpose**: A Promise is an object that serves as a placeholder for a value that is initially unknown but will be available in the future.
   - It is a container for an asynchronously delivered value.
   - Think of it as a container for a "future value."
 
 #### **When is a Promise Useful?**
+
 - When initiating an asynchronous task (like an AJAX call), there is no value immediately, but we know that a value will be returned eventually.
 - Promises provide a way to handle this future value when it arrives.
 
-#### **Analogy**: 
+#### **Analogy**:
+
 - A Promise is like a lottery ticket. You purchase the ticket (start the asynchronous operation), and you don’t know if you’ll win (whether the result will be successful or not), but you can claim your prize (use the value) when it arrives.
 
 #### **Advantages of Using Promises**
+
 - **Avoiding Callback Hell**: Promises allow us to chain asynchronous operations without deeply nesting callback functions, making code cleaner and easier to maintain.
 - **Better Handling**: Instead of relying on events and callbacks passed into asynchronous functions, Promises give us a structured way to handle asynchronous results.
 
 ---
 
 #### **Lifecycle of a Promise**
+
 A Promise goes through different states during its lifecycle:
 
-1. **Pending**:  
-   - This is the initial state. The promise is in progress, and the asynchronous task is still running.  
+1. **Pending**:
+
+   - This is the initial state. The promise is in progress, and the asynchronous task is still running.
    - At this point, there is no value yet, but the promise indicates that a result will be provided eventually.
 
-2. **Settled**:  
+2. **Settled**:
    - The promise has completed the asynchronous task, but it could have two possible outcomes:
      - **Fulfilled**: The asynchronous operation was successful, and the value is now available.
      - **Rejected**: An error occurred during the asynchronous operation, and the promise could not be fulfilled.
@@ -188,6 +196,7 @@ A Promise goes through different states during its lifecycle:
 - **Note**: Once a promise is settled (either fulfilled or rejected), it cannot change its state. This means that the promise is **immutable** after it settles.
 
 ---
+
 ### **Code Example**
 
 1. **Basic Fetch Request**  
@@ -227,12 +236,11 @@ A Promise goes through different states during its lifecycle:
 
    ```javascript
    const getJSON = function (url, errorMsg = 'Something went wrong') {
-     return fetch(url)
-       .then(response => {
-         if (!response.ok) {
-           throw new Error(`${errorMsg} (${response.status})`); // Manually throw error
-         }
-       });
+     return fetch(url).then(response => {
+       if (!response.ok) {
+         throw new Error(`${errorMsg} (${response.status})`); // Manually throw error
+       }
+     });
    };
    ```
 
@@ -241,14 +249,20 @@ A Promise goes through different states during its lifecycle:
 
    ```javascript
    const getCountryDataArr = country => {
-     getJSON(`https://restcountries.com/v3.1/name/${country}`, 'Country not found')
+     getJSON(
+       `https://restcountries.com/v3.1/name/${country}`,
+       'Country not found',
+     )
        .then(data => {
          renderCountry(data[0]);
          const neighbour = data[0].borders[0];
 
          if (!neighbour) throw new Error('No neighbour found!'); // Throw error if no neighbour
 
-         return getJSON(`https://restcountries.com/v3.1/alpha/${neighbour}`, 'Country not found');
+         return getJSON(
+           `https://restcountries.com/v3.1/alpha/${neighbour}`,
+           'Country not found',
+         );
        })
        .then(data => renderCountry(data[0], 'neighbour'))
        .catch(err => {
@@ -290,5 +304,188 @@ A Promise goes through different states during its lifecycle:
      countriesContainer.style.opacity = 1; // Reset UI
    });
    ```
+
+---
+
+### JavaScript Runtime
+
+- **Runtime in the browser**: A container that includes all the components necessary to execute JavaScript code.
+- **Engine**: The core of the runtime.
+- **Heap**: Where objects are stored in memory.
+- **Call stack**: The place where code is executed. It supports only one thread of execution (no multitasking).
+- **Web API**: APIs provided to the engine but not part of JavaScript itself (e.g., DOM, fetch API, timers, AJAX calls).
+- **Callback queue**: A data structure holding ready-to-be-executed callback functions (triggered by events).
+  - An ordered list of callback functions waiting to be executed.
+- **Event loop**: Moves callbacks from the queue to the call stack whenever the call stack is empty. It enables asynchronous behavior and makes the non-blocking concurrency model in JavaScript possible.
+
+### How Asynchronous JavaScript Works Behind the Scenes
+
+```javascript
+const el = document.querySelector('img');
+el.src = 'dog.jpg';
+el.addEventListener('load', () => {
+  el.classList.add('fadeIn');
+});
+
+fetch('https://someurl.com/api').then(res => console.log(res));
+```
+
+- The **web APIs environment** handles asynchronous tasks related to the DOM, timers, and AJAX calls.
+- **Loading an image** does not happen in the call stack or the main thread of execution but in the web APIs environment.
+  - To perform an action after the image finishes loading, we listen to the `load` event.
+  - A callback is registered in the web APIs environment and remains there until the `load` event is emitted.
+- The **asynchronous fetch operation** also occurs in the web APIs environment.
+  - A callback is registered in the web API environment.
+- When all code in the call stack is finished, and the `load` event is emitted for the image:
+  - The callback for the event is placed into the **callback queue**.
+- The **event loop** checks the call stack and, if it is empty (except for the global context), transfers the first callback from the callback queue to the call stack (event loop tick).
+- **When data arrives from the fetch operation**:
+  - Callbacks related to promises do not enter the callback queue.
+  - Instead, these callbacks go into the **microtask queue**, which has priority over the callback queue.
+
+### Key Points
+
+- JavaScript itself lacks awareness of time; asynchronous operations do not happen in the engine.
+- The **runtime** manages all asynchronous behavior, while the **event loop** determines which code will execute.
+
+---
+
+### Code Example
+
+```javascript
+// event loop in practice
+
+console.log('Test start'); // 1
+
+setTimeout(() => console.log('0 sec timer'), 0); // 5
+
+// Timers are not guaranteed to execute exactly at the specified time. The specified time is the minimum delay before execution.
+
+Promise.resolve('Resolved promise 1').then(res => console.log(res)); // 3
+
+// Promises are resolved immediately but their `.then` handlers are executed as microtasks.
+// Microtasks have higher priority than macrotasks (like `setTimeout`), so they are executed first.
+
+Promise.resolve('Resolved promise 2').then(res => {
+  // Promise itself will be resolved immediately.
+  // The `.then` callback is added to the microtask queue.
+  for (let i = 0; i < 1000000000; i++) {}
+  // This loop simulates a delay, causing the `0 sec timer` to execute later than expected.
+  console.log(res);
+}); // 4
+
+console.log('Test end'); // 2
+
+// Code outside of any callback function is executed first (synchronous code).
+// Callbacks related to Web APIs go to the Web API section and then to the callback queue.
+// The event loop prioritizes tasks in the microtask queue (e.g., Promises) over the callback queue (e.g., `setTimeout`).
+```
+---
+
+### **Event Loop in Practice**
+
+1. **Execution Order:**
+   - Code outside callbacks executes first.
+   - **Microtasks (Promises)** are processed before **macrotasks (setTimeout, setInterval)**.
+
+2. **Code Execution Breakdown:**
+   - `console.log('Test start');` → Synchronous code (executes first).
+   - `setTimeout(() => console.log('0 sec timer'), 0);` → Macrotask (executes later via callback queue).
+   - `Promise.resolve('Resolved promise 1').then(res => console.log(res));` → Microtask (executes before macrotasks).
+   - `Promise.resolve('Resolved promise 2').then(res => { /* Simulated delay */ });` → Microtask with delay due to loop.
+
+3. **Important Notes:**
+   - Promises are resolved immediately but their callbacks go into the **microtask queue**.
+   - The **event loop** processes the microtask queue before moving to the callback queue.
+   - `setTimeout` specifies the **minimum delay**, not a guaranteed execution time.
+
+---
+
+### **Async/Await and Error Handling**
+
+1. **Key Concepts:**
+   - `async` functions run in the background and return a promise.
+   - `await` pauses the execution until the promise is settled.
+   - **Try/Catch** is used to handle errors inside `async` functions.
+   - Errors must be manually thrown for non-network issues.
+
+2. **Example Flow:**
+   ```javascript
+   const whereAmI = async function () {
+       try {
+           const pos = await getPosition(); // Get location
+           const { latitude: lat, longitude: lng } = pos.coords;
+
+           const resGeo = await fetch(`reverse-geocode API`);
+           if (!resGeo.ok) throw new Error('Problem getting location data');
+           const dataGeo = await resGeo.json();
+
+           const res = await fetch(`restcountries API`);
+           if (!res.ok) throw new Error('Problem getting country');
+           const data = await res.json();
+
+           console.log(`You are in ${dataGeo.city}, ${dataGeo.country}`);
+       } catch (err) {
+           console.error(err);
+       }
+   };
+   ```
+
+3. **Mixing `then` and `async/await`:**
+   - **Not recommended** as it can lead to inconsistent code readability.
+
+4. **Best Practices:**
+   - Use `async/await` for cleaner syntax.
+   - Always handle errors with `try/catch`.
+
+---
+
+### **Parallel Execution with `Promise.all`**
+
+1. **Problem with Sequential Execution:**
+   - Sequential `await` calls wait for each promise to resolve before moving to the next.
+
+2. **Optimized Solution:**
+   - `Promise.all` runs multiple promises in parallel and resolves when all are settled:
+     ```javascript
+     const get3Countries = async function (c1, c2, c3) {
+         try {
+             const data = await Promise.all([
+                 getJSON(`restcountries API for ${c1}`),
+                 getJSON(`restcountries API for ${c2}`),
+                 getJSON(`restcountries API for ${c3}`),
+             ]);
+             console.log(data.map(d => d[0].capital));
+         } catch (err) {
+             console.error(err);
+         }
+     };
+     ```
+
+3. **Caveats:**
+   - If any promise is rejected, the entire `Promise.all` fails.
+
+---
+
+### **Additional Notes**
+
+1. **IIFE (Immediately Invoked Function Expression):**
+   - Commonly used to encapsulate `async` logic:
+     ```javascript
+     (async function () {
+         try {
+             const city = await whereAmI();
+             console.log(city);
+         } catch (err) {
+             console.error(err);
+         }
+     })();
+     ```
+
+2. **Error Handling:**
+   - Always rethrow errors in `catch` if they need to propagate.
+
+3. **Geolocation API:**
+   - Wrap in a promise for cleaner usage with `async/await`.
 
 ---
