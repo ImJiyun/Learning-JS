@@ -255,3 +255,66 @@ const addTaxRate = function (rate) {
 const addVAT2 = addTaxRate(0.23);
 console.log(addVAT2(100));
 console.log(addVAT2(23));
+
+/////////////////////////////////////////////////////////////////////////////
+// Closures
+const secureBooking = function () {
+  let passengerCount = 0;
+
+  return function () {
+    passengerCount++;
+    console.log(`${passengerCount} passengers`);
+  };
+};
+
+const booker = secureBooking();
+
+booker();
+booker();
+booker();
+
+console.log(booker); // get a function itself
+
+// Example 1
+let f;
+
+const g = function () {
+  const a = 23;
+  f = function () {
+    // reassigned
+    console.log(a * 2);
+  };
+};
+
+const h = function () {
+  const b = 777;
+  f = function () {
+    // reassigned
+    console.log(b * 2);
+  };
+};
+
+g();
+f(); // 46
+console.dir(f);
+
+// Re-assigned
+h();
+f(); // 1554
+console.dir(f);
+
+// Example 2
+const boardPassengers = function (n, wait) {
+  const perGroup = n / 3; // closure has a priority over scope chain
+
+  // this callback was created in the VE Of boardPassengers
+  setTimeout(function () {
+    console.log(`We are now boarding all ${n} passengers`);
+    console.log(`There are 3 groups, each with ${perGroup} passengers`);
+  }, 1000);
+
+  console.log(`Will start boarding in ${wait} seconds.`);
+};
+
+const perGroup = 1000;
+boardPassengers(100, 2);
