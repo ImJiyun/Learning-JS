@@ -181,7 +181,7 @@ book.call(eurowings, 23, 'Sarah');
 - 1st argument : what this keyword points to
 - after the 1st argument : arguments of the original function
 
-- Result 
+- Result
   ```
   Sarah booked a seat on Eurowings flight EW23
   ```
@@ -265,3 +265,139 @@ console.log(addVAT(23));
 ```
 
 - difference between default parameters : `bind` creates a new function (a more specific function based on a more general function)
+
+---
+
+### Closure
+
+#### Definition
+
+- Variable environment attached to the function, exactly as it was at the time and place the function was created. (even after that execution context is gone.)
+- Closure makes a function remember all the variable that existed at the function's birthplace
+- A function has access to the variable environment of the execution context in which it was created
+- We do NOT have to manually create closures, this is a JavaScript feature that happens automatically. We can't even access closed-oever variables explicitly. A closure is NOT a tangible JavaScript object.
+
+```javascript
+const secureBooking = function () {
+  let passengerCount = 0;
+
+  return function () {
+    passengerCount++;
+    console.log(`${passengerCount} passengers`);
+  };
+};
+
+const booker = secureBooking();
+```
+
+```javascript
+booker(); // 1 passengers
+booker(); // 2 passengers
+booker(); // 3 passengers
+```
+
+- How can `booker` function update the `passengerCount` defined in `secureBooking` function that actually has already finished executing?
+
+- Execution context of `secureBooking` is popped off the call stack after the function finished running.
+
+- This variable environmnet which holds `passengerCount` is still stored in memory
+
+- Because of the clourse, VE was moved to heap and NOT garbage collected.
+  (Usually when the EC pops off the stack, the variables in thet stack are destoryed by GC)
+
+- The place where `booker` function was created is EC of `secureBooking`
+- Therefore, `booker` can access to the VE of `secureBooking` which contains `passengerCount`
+
+#### Exampe 1
+
+```javascript
+let f; // first defined
+
+const g = function () {
+  const a = 23;
+  f = function () {
+    // reassigned
+    console.log(a * 2);
+  };
+};
+
+g();
+// g has finished execution (popped off the call stack)
+f();
+```
+
+- `f` was defined in the global EC
+- and was reassigned in the `g` function (VE of `g` function)
+- So we can access the a variable even after `g` finished execution (it means EC of 'g' has popped off the stack)
+
+```javascript
+let f;
+
+const g = function () {
+  const a = 23;
+  f = function () {
+    // reassigned
+    console.log(a * 2);
+  };
+};
+
+const h = function () {
+  const b = 777;
+  f = function () {
+    // reassigned
+    console.log(b * 2);
+  };
+};
+
+g();
+f(); // 46
+console.dir(f); // in this point, it has a closure of g
+
+// Re-assigned
+h();
+f(); // 1554
+console.dir(f); // in this point, it has a closure of h
+```
+
+- Now we've got h function, and inside of that, `f` was reassigned
+- `f` is closed over the VE of `h`
+- `f` can acess the `b` variable
+
+#### Exampe 2
+
+```javascript
+const boardPassengers = function (n, wait) {
+  const perGroup = n / 3;
+
+  setTimeout(function () {
+    console.log(`We are now boarding all ${n} passengers`);
+    console.log(`There are 3 groups, each with ${perGroup} passengers`);
+  }, 1000);
+
+  console.log(`Will start boarding in ${wait} seconds.`);
+};
+
+boardPassengers(100, 2);
+```
+
+- The callback inside `setTimeout` was created in the VE Of `boardPassengers`
+- so it can access the variable inside `boardPassengers`
+- Another characteristics of closure : it has a priority over scope chain
+
+```javascript
+const boardPassengers = function (n, wait) {
+  const perGroup = n / 3; // closure has a priority over scope chain
+
+  setTimeout(function () {
+    console.log(`We are now boarding all ${n} passengers`);
+    console.log(`There are 3 groups, each with ${perGroup} passengers`);
+  }, 1000);
+
+  console.log(`Will start boarding in ${wait} seconds.`);
+};
+
+const perGroup = 1000;
+boardPassengers(100, 2);
+```
+
+- If the `perGroup` in `boardPassengers` doesn't exist, the log will be `There are 3 groups, each with 100 passengers`
