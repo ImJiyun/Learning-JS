@@ -70,7 +70,7 @@ const displayMovements = function (movements) {
       <div class="movements__row">
           <div class="movements__type movements__type--${type}">${i + 1} 
           ${type}</div>
-          <div class="movements__value">${mov}</div>
+          <div class="movements__value">${mov}€</div>
         </div>
     `;
     // afterbeginn : just inside the element, before its first child
@@ -78,7 +78,29 @@ const displayMovements = function (movements) {
   });
 };
 
-displayMovements(account1.movements);
+const calcDisplaySummary = function (acc) {
+  const incomes = acc.movements
+    .filter(mov => mov > 0)
+    .reduce((acc, mov) => acc + mov, 0);
+  labelSumIn.textContent = `${incomes}€`;
+
+  const out = acc.movements
+    .filter(mov => mov < 0)
+    .reduce((acc, mov) => acc + mov, 0);
+
+  labelSumOut.textContent = `${Math.abs(out)}€`;
+
+  const interest = acc.movements
+    .filter(mov => mov > 0)
+    .map(deposit => (deposit * acc.interestRate) / 100)
+    .filter((int, i, arr) => {
+      console.log(arr);
+      return int >= 1;
+    })
+    .reduce((acc, int) => acc + int, 0);
+
+  labelSumInterest.textContent = `${interest}€`;
+};
 
 const createUsernames = function (accs) {
   // we don't want a new array but modify the array that we get as an input
@@ -104,7 +126,44 @@ const calcDisplayBalance = function (movements) {
   labelBalance.textContent = `${balance} EUR`;
 };
 
-calcDisplayBalance(account1.movements);
+let currentAccount;
+
+btnLogin.addEventListener('click', function (e) {
+  // default behavior of clicking submit buttion is for the page to reload
+  // callback function can get access to the event object
+  e.preventDefault(); // prevent the form from submitting (for AJAX)
+
+  currentAccount = accounts.find(
+    acc => acc.username === inputLoginUsername.value
+  );
+  // find returns undefind if no cases match the condition
+  console.log(currentAccount);
+
+  // the value of input tag is string
+  // optional chaining : pin property only will be read if the currentAccount exists
+  if (currentAccount?.pin === Number(inputLoginPin.value)) {
+    // Display UI and message
+    labelWelcome.textContent = `Welcome back, ${
+      currentAccount.owner.split(' ')[0]
+    }`;
+    containerApp.style.opacity = 1;
+
+    // clear input fields
+    console.log('inputLoginUsername', inputLoginUsername);
+    inputLoginUsername.value = inputLoginPin.value = '';
+
+    inputLoginPin.blur(); // loses its focus
+
+    // Display movements
+    displayMovements(currentAccount.movements);
+
+    // Display balance
+    calcDisplayBalance(currentAccount.movements);
+
+    // Display summary
+    calcDisplaySummary(currentAccount);
+  }
+});
 
 /////////////////////////////////////////////////
 /////////////////////////////////////////////////
@@ -223,7 +282,9 @@ console.log(movementsUSDfor);
 const movementsDescriptions = movements.map((mov, i, arr) => {
   // it's the map method which calls the callback
   // it will simply pass in the current element, index, the whole array
-  return `Movement ${i + 1}: You ${mov > 0 ? `deposited` : `withdrew`} ${Math.abs(mov)}`;
+  return `Movement ${i + 1}: You ${
+    mov > 0 ? `deposited` : `withdrew`
+  } ${Math.abs(mov)}`;
 });
 console.log(movementsDescriptions);
 
@@ -281,6 +342,41 @@ const max = movements.reduce((acc, mov) => {
 }, movements[0]);
 
 console.log(max);
+
+///////////////////////////////////////////////////////////////////////////////////
+// Chaining methods
+// We can only chain a method after a method that returns an array
+// filter and map return a new array, reduce returns a value
+const totalDepositsUSD = movements
+  .filter(mov => mov > 0)
+  // .map(mov => mov * eurToUsd)
+  .map((mov, i, arr) => {
+    console.log(arr);
+    return mov * eurToUsd;
+  })
+  .reduce((acc, mov) => acc + mov, 0);
+console.log(totalDepositsUSD);
+
+// NOTE : DO NOT OVERUSE chaining methods
+// chaining lots of method could deteriorate performance
+// DO NOT chain a method like splice, or reverse method
+
+///////////////////////////////////////////////////////////////////////////////////
+// find
+// accepts a condition, a callback function
+// it returns an element of the array
+// unlike filter method, it will not return a new array, but the first element in the array that satisfies the condition ("JUST ONE VALUE")
+const firstWithdrawl = movements.find(mov => mov < 0);
+console.log(movements);
+console.log(firstWithdrawl);
+
+console.log(accounts);
+const account = accounts.find(acc => acc.owner === 'Jessica Davis');
+console.log(account);
+
+///////////////////////////////////////////////////////////////////////////////////
+// findIndex method
+// returns the index of the found element
 
 ///////////////////////////////////////////////////////////////////////////////////
 // sorting arrays
