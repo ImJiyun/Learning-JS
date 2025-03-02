@@ -2,6 +2,10 @@ This is a repository for practicing Javascript. The course is from [The Complete
 
 ---
 
+[05. Guess My Number](/05-Guess-My-Number/README.md) <br/>
+[06. Modal](./06-Modal/README.md) <br/>
+[07. Pig Game](./07-Pig-Game/README.md) <br/>
 [08. Behind the Scenes](/08-Behind-the-Scenes/README.md) <br/>
 [09. Data Structures & Operators](/09-Data-Structures-Operators/README.md) <br/>
 [10. Functions](/10-Functions/README.md) <br/>
+[16. Asynchronous JavaScript](/16-Asynchronous/README.md) <br/>
