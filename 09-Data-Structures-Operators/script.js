@@ -39,7 +39,7 @@ let restaurant = {
     address,
   }) {
     console.log(
-      `Order received! ${this.starterMenu[starterIndex]} and ${this.mainMenu[mainIndex]} will be delivered to ${address} at ${time}`,
+      `Order received! ${this.starterMenu[starterIndex]} and ${this.mainMenu[mainIndex]} will be delivered to ${address} at ${time}`
     );
   },
 
@@ -306,7 +306,7 @@ restaurant = {
     address,
   }) {
     console.log(
-      `Order received! ${this.starterMenu[starterIndex]} and ${this.mainMenu[mainIndex]} will be delivered to ${address} at ${time}`,
+      `Order received! ${this.starterMenu[starterIndex]} and ${this.mainMenu[mainIndex]} will be delivered to ${address} at ${time}`
     );
   },
 
@@ -345,6 +345,156 @@ console.log(entries);
 for (let [key, { open, close }] of entries) {
   console.log(`On ${key} we open at ${open} and close at ${close}`);
 }
+
+///////////////////////////////////////////////////////////////////////////
+// Sets
+// collection of unique values; a set can never have any duplicates
+// put iterable in the constructor
+const orderSet = new Set([
+  'pasta',
+  'pizza',
+  'risotto',
+  'pizza',
+  'pasta',
+  'pizza',
+]);
+
+console.log(orderSet); // "pasta", "pizza", "risotto"
+
+// looks like an array, there's no key value pairs
+// it's just a bunch of values grouped together
+// sets are also iterables like arrays
+
+// sets are different than arrays in terms that
+//  its elements are unique
+// the order of elements in the set is irrelevant
+
+console.log(new Set('Jiyun')); // "J", "i", "y", "u", "n"
+
+console.log(orderSet.size); // 3
+// check if an element exists in a set
+console.log(orderSet.has('pizza')); // true
+console.log(orderSet.has('bread')); // false
+// add an element to a set
+orderSet.add('garlic bread');
+orderSet.add('garlic bread');
+console.log(orderSet); // "pasta", "pizza", "risotto", "garlic bread"
+// delete an element
+orderSet.delete('risotto');
+
+// retreive an element
+// there are no indexes
+// there's no point of getting an element from a set
+
+// clear all elements
+// orderSet.clear();
+console.log(orderSet);
+
+// sets are iterables
+// so we can loop over them
+for (const order of orderSet) console.log(order);
+
+// Use case : remove duplicate values of arrays
+const staff = ['Waiter', 'Chef', 'Waiter', 'Manager', 'Chef', 'Waiter'];
+const staffUnique = new Set(staff);
+console.log(staffUnique);
+
+// convert a set to an array
+// spread operator works on all iterables
+const staffUniqueArr = [...staffUnique];
+
+console.log(new Set(staff).size);
+
+// how many letters are unique
+console.log(new Set('Jiyun Kim'));
+///////////////////////////////////////////////////////////////////////////
+// Map
+// we can use to map values to keys
+// like objects, data is stored in key-value pairs in maps
+// in maps, keys can have any types
+// in objects, keys are always strings
+
+const rest = new Map();
+rest.set('name', 'Classico Italiano'); // first arg : the name of key, second arg: the value
+rest.set(1, 'Firenze, Italy');
+rest.set(2, 'Lisbon, Portugal');
+// set method not only updates the map, but also returns the map
+// so, chaining methods is avaiable
+rest
+  .set('categories', ['Italian', 'Pizzeria', 'Vegetarian', 'Organic'])
+  .set('open', 11)
+  .set('close', 23)
+  .set(true, 'We are open')
+  .set(false, 'We are closed');
+
+// retrieve data
+// when retrieving data, the data type of key is important
+console.log(rest.get('name')); // Classico Italiano
+console.log(rest.get('true')); // undefined
+
+const time = 21;
+console.log(rest.get(time > rest.get('open') && time < rest.get('close'))); // We are open
+
+// check if a map contains a certain key
+console.log(rest.has('categories'));
+
+// delete data based on a key
+rest.delete(2);
+console.log(rest);
+
+// Compared to objects
+// we can also delete properties from objects using delete operator, but it's really slow
+// objects also have a method, hasOwnProperty
+
+console.log(rest.size);
+
+// remove all elements from a map
+// rest.clear();
+
+// Use objects as a map's key
+rest.set([1, 2], 'Test');
+
+// to retreive data based on the object
+console.log(rest.get([1, 2])); // two arrays are different objects
+const arr2 = [1, 2];
+
+rest.set(document.querySelector('h1'), 'Heading');
+
+// Maps: Iteration
+const question = new Map([
+  ['question', 'What is the best programming language in the world?'],
+  [1, 'C'],
+  [2, 'Java'],
+  [3, 'JavaScript'],
+  ['correct', 3],
+  [true, 'Correct'],
+  [false, 'Try again!'],
+]);
+// convert objects to maps
+console.log(openingHours);
+console.log(Object.entries(openingHours));
+const hoursMap = new Map(Object.entries(openingHours));
+console.log(hoursMap);
+
+// Maps are iterables
+// Quiz app
+console.log(question.get('question'));
+for (const [key, value] of question) {
+  if (typeof key === 'number') console.log(`Answer ${key}: ${value}`);
+}
+
+// const answer = Number(prompt('Your answer'));
+const answer = 3;
+console.log(answer);
+
+// having a boolean key in a map
+console.log(question.get(question.get('correct') === answer));
+
+// convert a map to an array
+console.log([...question]);
+// console.log([...question.entries()]);
+console.log([...question.keys()]);
+console.log([...question.values()]);
 
 ///////////////////////////////////////////////////////////////////////////
 // strings
