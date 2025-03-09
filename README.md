@@ -8,4 +8,6 @@ This is a repository for practicing Javascript. The course is from [The Complete
 [08. Behind the Scenes](/08-Behind-the-Scenes/README.md) <br/>
 [09. Data Structures & Operators](/09-Data-Structures-Operators/README.md) <br/>
 [10. Functions](/10-Functions/README.md) <br/>
+[11. Arrays](/11-Arrays-Bankist/README.md) <br/>
+[12. Numbers & Dates & Timers](/12-Numbers-Dates-Timers-Bankist/README.md) <br/>
 [16. Asynchronous JavaScript](/16-Asynchronous/README.md) <br/>
