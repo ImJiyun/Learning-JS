@@ -165,7 +165,47 @@ restaurant.orderPizza('mushrooms', 'onion', 'olives', 'spinach');
 restaurant.orderPizza('mushrooms');
 ```
 
-Here’s an updated version of your notes with additional information:
+### Short Circuiting
+
+- It allows the interpreter to stop evaluating expressions as soon as the result is determined
+- NOTE :
+  - we can use non-boolean values as operands
+  - we can use ANY data type, return ANY data type
+
+#### OR operator(`||`)
+
+- It returns the first truthy value, or last falsy if all values are falsy
+
+```javascript
+console.log(3 || 'Jonas'); // 3
+console.log('' || 'Jonas'); //'Jonas' ("" is a falsy value)
+console.log(true || 0); // true
+console.log(undefined || null); // null (undefind is a falsy value)
+
+console.log(undefined || 0 || '' || 'Hello' || 23 || null); // 'Hello' (It is the first value in the chain of OR operations)
+```
+
+#### AND operator(`&&`)
+
+- It returns the first falsy value or last truthy if all are true
+
+```javascript
+console.log(0 && 'Jonas'); // 0
+console.log(7 && 'Jonas'); // "Jonas"
+
+console.log('Hello' && 23 && null && 'Jonas'); // null
+```
+
+#### Nullish Coalescing (`??`)
+
+- It returns the first non-nullish value
+- Nullish values are `null` and `undefined` (NOT includes `0` or `""`)
+
+```javascript
+restaurant.numGuests = 0;
+const guestCorrect = restaurant.numGuests ?? 10;
+console.log(guestCorrect); // 0
+```
 
 ### Sets
 

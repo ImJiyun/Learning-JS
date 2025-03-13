@@ -241,6 +241,56 @@ restaurant.orderPizza('mushrooms', 'onion', 'olives', 'spinach');
 restaurant.orderPizza('mushrooms');
 
 ///////////////////////////////////////////////////////////////////////////////
+// Short Circuiting (&& and ||)
+// we can use non-boolean values as operands
+
+// we can use ANY data type, return ANY data type
+console.log('---- OR ----');
+// In the case of OR operator, short circuiting means if the first value is a truthy value, it will immediately return first value
+console.log(3 || 'Jonas'); // 3
+console.log('' || 'Jonas'); //'Jonas' ("" is a falsy value)
+console.log(true || 0); // true
+console.log(undefined || null); // null (undefind is a falsy value)
+
+console.log(undefined || 0 || '' || 'Hello' || 23 || null); // 'Hello' (It is the first value in the chain of OR operations)
+
+restaurant.numGuests = 0; // falsy value
+const guests1 = restaurant.numGuests ? restaurant.numGuests : 10;
+console.log(guests1);
+
+const guests2 = restaurant.numGuests || 10;
+console.log(guests2); // 0
+
+// AND operator
+console.log('---- AND ----');
+// when the first value is falsy, it returns imddeidately that falsy value
+// when the first value is truthy, it continues the operatrion, returns the last value
+
+// AND operator is only true if all the operands are true
+// if the first one is false, the entire result of AND operation will be false
+// So we don't need to look at any other operands
+console.log(0 && 'Jonas'); // 0
+console.log(7 && 'Jonas'); // "Jonas"
+
+console.log('Hello' && 23 && null && 'Jonas'); // null
+
+// Practical example
+if (restaurant.orderPizza) {
+  restaurant.orderPizza('mushrooms', 'spinach');
+}
+
+restaurant.orderPizza && restaurant.orderPizza('mushroo', 'spinach');
+///////////////////////////////////////////////////////////////////////////////
+// Nullish Coalescing Operator
+console.log('---- Nullish ----');
+
+// Nullish : null and undefined (NOT includes 0 or "")
+restaurant.numGuests = 0;
+const guestCorrect = restaurant.numGuests ?? 10; // 0
+// only if the first one was null or undefined, the second operand would be executed
+console.log(guestCorrect);
+
+///////////////////////////////////////////////////////////////////////////////
 // for - of loop
 // can simply get the elements
 menu = [...restaurant.starterMenu, ...restaurant.mainMenu];
