@@ -224,3 +224,116 @@ console.log(logo.getAttribute('designer')); // jiyun
 ```js
 console.log(logo.dataset.versionNumber);
 ```
+
+### Event Propagation : Bubbling and Capturing
+
+```html
+<body>
+  <section>
+    <p>A paragraph with a <a>link</a></p>
+  </section>
+</body>
+```
+
+When a user interacts with a webpage, such as clicking a link, the browser creates an event that doesn't start directly at the target element. Instead, it originates from the root of the document and travels through a process called event propagation, which occurs in three phases:
+
+1. **Capturing Phase**:
+   The event travels downward from the document root toward the target element.
+2. **Target Phase**:
+   When the event reaches the target element (e.g., the `<a>` tag), it triggers any event listeners attached directly to it.
+3. **Bubbling Phase**:
+   After reaching the target, the event bubbles upward through the ancestor elements, back to the document root.
+
+- Why is it so important?
+
+  - It's as if the event happens on every parent element too.
+  - For example, adding a click event listener to the `<section>` would still detect a click on the link inside it.
+  - This allows for event delegation, where one listener can handle events from multiple child elements.
+
+- NOTE
+  - By default, events are handled during the **target and bubbling phases**.
+  - However, you can set listeners to trigger during the capturing phase by passing { capture: true } as an option.
+  - Not all event types support bubbling and capturing.
+
+### Example
+
+#### HTML Structure
+
+```html
+<nav class="nav">
+  <ul class="nav__links">
+    <li class="nav__item">
+      <a class="nav__link" href="#">Features</a>
+    </li>
+  </ul>
+</nav>
+```
+
+- `.nav` → outermost parent element
+- `.nav__links` → intermediate container
+- `.nav__link` → the actual clickable link
+
+#### JavaScript
+
+##### 1. Event Listener on `.nav__link`
+
+```javascript
+document.querySelector('.nav__link').addEventListener('click', function (e) {
+  this.style.backgroundColor = randomColor(); // change background color of link
+  console.log('LINK', e.target, e.currentTarget);
+  console.log(e.currentTarget === this); // true
+
+  // e.stopPropagation(); // uncomment to stop bubbling
+});
+```
+
+- This event listener is attached to the actual link (`<a>` tag).
+- `e.target` is the element where the event _actually occurred_ (in this case, the `<a>` element).
+- `e.currentTarget` is the element to which the event handler is attached — here, the same as `this`.
+- The handler is executed during the **target phase**.
+- `stopPropagation()` can stop the event from bubbling up to parent elements.
+
+##### 2. Event Listener on `.nav__links`
+
+```javascript
+document.querySelector('.nav__links').addEventListener('click', function (e) {
+  this.style.backgroundColor = randomColor(); // change background color of container
+  console.log('CONTAINER', e.target, e.currentTarget);
+});
+```
+
+- This event listener is on the `<ul>` container.
+- Even though the user clicked on the `<a>` tag, the event bubbles up to this element.
+- `e.target` is still the `<a>` tag (origin of the event).
+- `e.currentTarget` is the `<ul>` element — where this handler is attached.
+- This listener runs during the **bubbling phase**.
+
+##### 3. Event Listener on `.nav`
+
+```javascript
+document.querySelector('.nav').addEventListener('click', function (e) {
+  this.style.backgroundColor = randomColor(); // change background of <nav>
+  console.log('NAV', e.target, e.currentTarget);
+});
+```
+
+- Similar to the previous one, this listener is triggered during **bubbling**.
+- `e.target` is the original element clicked (`<a>`), and `e.currentTarget` is `<nav>`.
+
+#### Event Flow (When the `<a>` is clicked)
+
+1. The event is created at the root (document) and flows _down_ the DOM tree in the **capturing phase**:  
+   `document` → `nav` → `ul` → `li` → `a`
+2. When it reaches the target element (`<a>`), the **target phase** begins.
+3. Then, the event flows back _up_ the DOM tree in the **bubbling phase**:  
+   `a` → `li` → `ul` → `nav` → `document`
+
+#### Summary
+
+| Element       | Why it listens      | Phase          |
+| ------------- | ------------------- | -------------- |
+| `.nav__link`  | It's the **target** | Target phase   |
+| `.nav__links` | It's a **parent**   | Bubbling phase |
+| `.nav`        | It's a **parent**   | Bubbling phase |
+
+---
