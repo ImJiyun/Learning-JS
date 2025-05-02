@@ -337,3 +337,36 @@ document.querySelector('.nav').addEventListener('click', function (e) {
 | `.nav`        | It's a **parent**   | Bubbling phase |
 
 ---
+
+#### Event Delegation : Implement Page Navigation
+
+```javascript
+document.querySelectorAll('.nav__link').forEach(function (el) {
+  el.addEventListener('click', function (e) {
+    e.preventDefault();
+    const id = this.getAttribute('href'); // #section--1
+    console.log(id);
+    document.querySelector(id).scrollIntoView({ behavior: 'smooth' });
+  });
+});
+```
+
+- this code above has a problem: the exact same event handler is attached to three elements (`.nav__link`)
+- If the elements were 1000+, this would deteriorate performance
+- We can solve this problem with event delegation (events bubble up!)
+
+```javascript
+// Event delegation
+// 1. Add event listener to common parent element
+// 2. Determine what element originated the event
+document.querySelector('.nav__links').addEventListener('click', function (e) {
+  console.log(e.target); // where the event happened
+  e.preventDefault();
+
+  // Matching strategy
+  if (e.target.classList.contains('nav__link')) {
+    const id = e.target.getAttribute('href');
+    document.querySelector(id).scrollIntoView({ behavior: 'smooth' });
+  }
+});
+```
