@@ -370,3 +370,96 @@ document.querySelector('.nav__links').addEventListener('click', function (e) {
   }
 });
 ```
+
+---
+
+### Dom Traversing
+
+Traversing means going up and down the DOM tree
+
+#### Going downwards: child
+
+```javascript
+console.log(h1.childNodes); // returns a NodeList of all child nodes (including element nodes, text nodes, comment nodes)
+console.log(h1.children); // returns an HTMLCollection of all child elements (excluding text nodes and comment nodes)
+console.log(h1.firstElementChild); // returns the first child element
+console.log(h1.lastElementChild); // returns the last child element
+h1.firstElementChild.style.color = 'white'; // change the color of the first child element
+h1.lastElementChild.style.color = 'orangered'; // change the color of the last child element
+```
+
+- childNodes vs children
+  - childNodes: child **nodes** (element nodes, text nodes, and comment nodes)
+  - children: child **elements** (not text and comment nodes)
+
+#### Going upwards: parent
+
+```javascript
+console.log(h1.parentNode); // returns the parent node (can be an element or a text node)
+console.log(h1.parentElement); // returns the parent element (always an element)
+
+h1.closest('.header').style.background = 'var(--gradient-secondary)'; // returns the closest ancestor element that matches the selector
+
+console.log(h1.closest('h1')); // returns the closest ancestor element that matches the selector (in this case, itself)
+console.log(h1.closest('h2')); // returns null, because there is no ancestor element that matches the selector
+```
+
+#### Going sideways: siblings
+
+```javascript
+// we can only access direct siblings (elements that are next to each other in the DOM tree)
+console.log(h1.previousElementSibling); // returns the previous sibling element
+console.log(h1.nextElementSibling); // returns the next sibling element
+
+console.log(h1.previousSibling); // returns the previous sibling node (can be an element or a text node)
+console.log(h1.nextSibling); // returns the next sibling node (can be an element or a text node)
+
+// all siblings
+console.log(h1.parentElement.children); // returns an HTMLCollection of all sibling elements (including itself)
+[...h1.parentElement.children].forEach(function (el) {
+  if (el !== h1) {
+    el.style.color = 'orangered'; // change the color of all sibling elements except itself
+    el.style.transform = 'scale(0.5)'; // change the size of all sibling elements except itself
+  }
+});
+```
+
+- Siblings vs Element Siblings
+  - Siblings: nodes with the same parent (in the same **childNodes** list)
+  - Element Siblings: elements with the same parent (in the same **children** list)
+
+---
+
+### `mouseover` vs `mouseenter`
+
+#### Similarities
+
+- Both events are triggered when the mouse pointer enters an element
+- We can use them with `addEventListener` or as HTML attributes (`onmouseover`, `onmouseenter`)
+
+#### Differences
+
+| Feature                     | `mouseover`                                                 | `mouseenter`                                           |
+| --------------------------- | ----------------------------------------------------------- | ------------------------------------------------------ |
+| **Bubbling**                | Yes, it **bubbles**                                         | No, it **does not bubble**                             |
+| **Triggers again on child** | Yes – triggers again when moving into child elements        | No – does **not** trigger again when entering children |
+| **Typical use case**        | When we need to detect movement **into child elements too** | When we only care about the **main element itself**    |
+
+#### Behavior
+
+- `mouseover`: fires again when the mouse moves from the parent into the child
+- `mouseenter`: fires only once when the mouse first enters the parent; does not fire again when entering the child
+
+### `mouseout` vs `mouseleave`
+
+#### `mouseout`
+
+- The opposite of `mouseover`
+- Fires when the mouse pointer leaves an element or any of its children
+- Bubbles up the DOM
+
+#### `mouseleave`
+
+- The opposite of `mouseenter`
+- Fires only when the mouse leaves the element itself, not its children
+- Does not bubble

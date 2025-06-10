@@ -7,6 +7,11 @@ const btnsOpenModal = document.querySelectorAll('.btn--show-modal'); // returns 
 // NodeList is a collection of nodes, similar to an array, but not an array
 const btnScrollTo = document.querySelector('.btn--scroll-to');
 const section1 = document.getElementById('section--1');
+const nav = document.querySelector('.nav');
+
+const tabs = document.querySelectorAll('.operations__tab');
+const tabsContainer = document.querySelector('.operations__tab-container');
+const tabsContent = document.querySelectorAll('.operations__content');
 ///////////////////////////////////////
 // Modal window
 
@@ -50,7 +55,7 @@ btnScrollTo.addEventListener('click', function (e) {
   console.log(
     'height/width viewport',
     document.documentElement.clientHeight,
-    document.documentElement.clientWidth
+    document.documentElement.clientWidth,
   );
 
   // Scrolling
@@ -207,7 +212,7 @@ logo.classList.contains('c'); // not includes
 // No matter we listen event or not, it always happens
 
 // mouseenter: it fires whenever a mouse enters a certain element
-const h1 = document.querySelector('h1');
+let h1 = document.querySelector('h1');
 
 const alertH1 = function (e) {
   alert('addEventListener: Great! You are reading the heading :D');
@@ -271,3 +276,109 @@ document.querySelector('.nav').addEventListener('click', function (e) {
   console.log('NAV', e.target, e.currentTarget); // e.target is where the event originated (not the element on which the handler is attached)
 });
 */
+
+////////////////////////////////////////////////////
+// DOM Traversing
+// traversing means going up and down the DOM tree
+// going down the DOM tree
+
+h1 = document.querySelector('h1');
+
+// Going downwards: child
+console.log(h1.querySelectorAll('.highlight')); // returns a NodeList
+// returns all elements with the class 'highlight' that are children of h1
+console.log(h1.childNodes); // returns a NodeList of all child nodes (including text nodes)
+console.log(h1.children); // returns an HTMLCollection of all child elements (excluding text nodes)
+console.log(h1.firstElementChild); // returns the first child element
+console.log(h1.lastElementChild); // returns the last child element
+h1.firstElementChild.style.color = 'white'; // change the color of the first child element
+h1.lastElementChild.style.color = 'orangered'; // change the color of the last child element
+
+// going upwards: parent
+console.log(h1.parentNode); // returns the parent node (can be an element or a text node)
+console.log(h1.parentElement); // returns the parent element (always an element)
+
+h1.closest('.header').style.background = 'var(--gradient-secondary)'; // returns the closest ancestor element that matches the selector
+
+console.log(h1.closest('h1')); // returns the closest ancestor element that matches the selector (in this case, itself)
+console.log(h1.closest('h2')); // returns null, because there is no ancestor element that matches the selector
+
+// going sideways: siblings
+// we can only access direct siblings (elements that are next to each other in the DOM tree)
+console.log(h1.previousElementSibling); // returns the previous sibling element
+console.log(h1.nextElementSibling); // returns the next sibling element
+
+console.log(h1.previousSibling); // returns the previous sibling node (can be an element or a text node)
+console.log(h1.nextSibling); // returns the next sibling node (can be an element or a text node)
+
+// all siblings
+console.log(h1.parentElement.children); // returns an HTMLCollection of all sibling elements (including itself)
+[...h1.parentElement.children].forEach(function (el) {
+  if (el !== h1) {
+    el.style.color = 'orangered'; // change the color of all sibling elements except itself
+    el.style.transform = 'scale(0.5)'; // change the size of all sibling elements except itself
+  }
+});
+
+///////////////////////////////////////////////
+// Tapped component
+
+/*
+tabs.forEach(t =>
+  t.addEventListener('click', () => {
+    console.log('TAB');
+  }),
+); 
+*/
+// it's not a good idea to add event listener to each tab, because it will create multiple event listeners
+// instead, we can add event listener to the parent element and then use event delegation
+
+tabsContainer.addEventListener('click', function (e) {
+  const clicked = e.target.closest('.operations__tab'); // closest is used to find the closest ancestor element that matches the selector
+  console.log(clicked);
+  // Guard clause
+  if (!clicked) return; // if clicked is null, we return early
+
+  // Remove active classes
+  tabs.forEach(t => t.classList.remove('operations__tab--active'));
+  // Activate tab
+  clicked.classList.add('operations__tab--active');
+
+  // Active content area
+  console.log(clicked.dataset.tab); // dataset is an object that contains all data attributes of the element
+  document
+    .querySelector(`.operations__content--${clicked.dataset.tab}`)
+    .classList.add('operations__content--active');
+
+  tabsContent.forEach(c => c.classList.remove('operations__content--active'));
+});
+
+////////////////////////////////////////////////
+// Menu fade animation
+// Passing arguments to the event handler function
+// mouseenter does not bubble up, so we have to use mouseover
+
+const handleHover = function (e) {
+  console.log(this, e.currentTarget); // this is the value of the first argument passed to bind (0.5 in this case)
+  // e.currentTarget is the element that the event listener is attached to (in this case, nav)
+  // e.target is the element that triggered the event (in this case, the link that was hovered over)
+  // By default, this keyword is the element that the event listener is attached to
+  // but we can change it by using bind, call, or apply methods
+  if (e.target.classList.contains('nav__link')) {
+    const link = e.target; // the element that triggered the event
+    const siblings = link.closest('.nav').querySelectorAll('.nav__link'); // all siblings of the link
+    const logo = link.closest('.nav').querySelector('img'); // the logo element
+
+    siblings.forEach(el => {
+      if (el !== link) el.style.opacity = this; // change the opacity of all siblings except itself
+    });
+    logo.style.opacity = this; // change the opacity of the logo
+  }
+};
+
+// Passing "argument" to the event handler function
+nav.addEventListener('mouseover', handleHover.bind(0.5));
+// bind creates a new function with the this keyword set to the first argument (0.5 in this case)
+
+nav.addEventListener('mouseout', handleHover.bind(1));
+// bind creates a new function with the this keyword set to the first argument (1 in this case)
