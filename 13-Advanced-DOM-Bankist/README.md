@@ -463,3 +463,109 @@ console.log(h1.parentElement.children); // returns an HTMLCollection of all sibl
 - The opposite of `mouseenter`
 - Fires only when the mouse leaves the element itself, not its children
 - Does not bubble
+
+---
+
+### Sticky Navivation
+
+```javascript
+const initialCoords = section1.getBoundingClientRect(); // get the coordinates of the section1 element
+// getBoundingClientRect returns an object with the coordinates of the element relative to the viewport
+console.log(initialCoords);
+
+window.addEventListener('scroll', function (e) {
+  console.log(e); // e is the event object that contains information about the event
+  console.log(window.scrollY); // scrollY is the number of pixels that the document has been scrolled vertically
+
+  if (window.scrollY > initialCoords.top) {
+    nav.classList.add('sticky');
+  } else {
+    nav.classList.remove('sticky');
+  }
+});
+```
+
+- scroll event is not a good idea to use, because it fires too often
+
+### Intersection Observer API
+
+```javascript
+// whenever the target element (section1) intersects with the root element (viewport by default) at 10%(threshold), the callback function is called
+
+const obsCallback = function (entries, observer) {
+  // entries is an array of threshold entries that are being observed
+  entries.forEach(entry => {
+    console.log(entry); // entry is an object that contains information about the intersection of the target element with the root element
+  });
+};
+
+// root is the element that we want to observe the intersection with (viewport by default)
+// target is the element that we want to observe (section1 in this case)
+const obsOptions = {
+  root: null, // null means the viewport
+  threshold: [0, 0.2], // // threshold is the percentage of the target element that is visible in the root element
+  // 0 means the target element is not visible at all, 1 means the target element is fully visible
+  // intersectionRatio is 0, if the target element is not visible at all, and 1, if the target element is fully visible
+};
+
+// IntersectionObserver is more efficient than scroll event listener, because it only fires when the target element intersects with the root element
+const observer = new IntersectionObserver(obsCallback, obsOptions);
+observer.observe(section1); // observe the section1 element
+// IntersectionObserver takes a callback function that is called whenever the target element intersects with the root element (viewport by default)
+```
+
+The **Intersection Observer API** is a browser API that allows developers to **asynchronously observe changes in the intersection of a target element with an ancestor element or with the top-level document’s viewport**
+
+It’s designed to be a **more efficient alternative** to listening to scroll events and manually calculating an element’s position relative to the viewport (which is costly and can cause performance issues)
+
+---
+
+#### 1. **IntersectionObserver**
+
+```js
+let observer = new IntersectionObserver(callback, options);
+```
+
+- **callback**: A function called when the target intersects with the root
+- **options**: An object to configure how the observer works
+
+#### 2. **Callback Signature**
+
+```js
+function callback(entries, observer) {
+  entries.forEach(entry => {
+    // Handle each entry
+  });
+}
+```
+
+- `entries`: An array of `IntersectionObserverEntry` objects.
+- `observer`: The observer instance.
+
+#### 3. **Options**
+
+```js
+{
+  root: document.querySelector('#scrollArea'), // default is viewport
+  rootMargin: '0px 0px -50px 0px', // margin around root
+  threshold: 0.5 // trigger when 50% of element is visible
+}
+```
+
+- **`root`**: The element used as the viewport for checking visibility (defaults to `null`, which means the browser viewport)
+- **`rootMargin`**: Margin around the root (can affect when intersection is triggered)
+- **`threshold`**: A single number or array of numbers indicating at what percentage of visibility the callback should be executed
+
+---
+
+#### IntersectionObserverEntry Properties
+
+When the callback is triggered, it receives `IntersectionObserverEntry` objects with:
+
+- `target`: The observed element.
+- `isIntersecting`: `true` if element intersects with the root.
+- `intersectionRatio`: Fraction of element visible.
+- `intersectionRect`: Rect of visible part.
+- `boundingClientRect`: Element’s bounding box.
+- `rootBounds`: Bounding box of the root.
+- `time`: Time the event occurred.

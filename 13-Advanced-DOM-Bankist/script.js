@@ -298,7 +298,7 @@ h1.lastElementChild.style.color = 'orangered'; // change the color of the last c
 console.log(h1.parentNode); // returns the parent node (can be an element or a text node)
 console.log(h1.parentElement); // returns the parent element (always an element)
 
-h1.closest('.header').style.background = 'var(--gradient-secondary)'; // returns the closest ancestor element that matches the selector
+// h1.closest('.header').style.background = 'var(--gradient-secondary)'; // returns the closest ancestor element that matches the selector
 
 console.log(h1.closest('h1')); // returns the closest ancestor element that matches the selector (in this case, itself)
 console.log(h1.closest('h2')); // returns null, because there is no ancestor element that matches the selector
@@ -382,3 +382,96 @@ nav.addEventListener('mouseover', handleHover.bind(0.5));
 
 nav.addEventListener('mouseout', handleHover.bind(1));
 // bind creates a new function with the this keyword set to the first argument (1 in this case)
+
+////////////////////////////////////////////////////
+// Sticky navigation
+// Sticky navigation: make the navigation bar stick to the top of the page when scrolling down
+// scroll event is not a good idea to use, because it fires too often
+/*
+const initialCoords = section1.getBoundingClientRect(); // get the coordinates of the section1 element
+// getBoundingClientRect returns an object with the coordinates of the element relative to the viewport
+console.log(initialCoords);
+
+window.addEventListener('scroll', function (e) {
+  console.log(e); // e is the event object that contains information about the event
+  console.log(window.scrollY); // scrollY is the number of pixels that the document has been scrolled vertically
+
+  if (window.scrollY > initialCoords.top) {
+    nav.classList.add('sticky');
+  } else {
+    nav.classList.remove('sticky');
+  }
+});
+*/
+////////////////////////////////////////////////////
+// Sticky navigation: Intersection Observer API
+// Intersection Observer API: allows us to observe changes in the intersection of a target element with an ancestor element or with a top-level document's viewport
+
+// whenever the target element (section1) intersects with the root element (viewport by default) at 10%(threshold), the callback function is called
+/*
+const obsCallback = function (entries, observer) {
+  // entries is an array of threshold entries that are being observed
+  entries.forEach(entry => {
+    console.log(entry); // entry is an object that contains information about the intersection of the target element with the root element
+  });
+};
+
+// root is the element that we want to observe the intersection with (viewport by default)
+// target is the element that we want to observe (section1 in this case)
+const obsOptions = {
+  root: null, // null means the viewport
+  threshold: [0, 0.2], // // threshold is the percentage of the target element that is visible in the root element
+  // 0 means the target element is not visible at all, 1 means the target element is fully visible
+  // intersectionRatio is 0, if the target element is not visible at all, and 1, if the target element is fully visible
+};
+
+// IntersectionObserver is more efficient than scroll event listener, because it only fires when the target element intersects with the root element
+const observer = new IntersectionObserver(obsCallback, obsOptions);
+observer.observe(section1); // observe the section1 element
+// IntersectionObserver takes a callback function that is called whenever the target element intersects with the root element (viewport by default)
+*/
+
+const navHeight = nav.getBoundingClientRect().height; // get the height of the nav element
+// getBoundingClientRect returns an object with the coordinates of the element relative to the viewport
+
+const stickyNav = function (entries) {
+  const [entry] = entries; // destructuring assignment to get the first entry
+  // console.log(entry);
+  if (!entry.isIntersecting) {
+    // if the target element is not intersecting with the root element (viewport by default)
+    nav.classList.add('sticky'); // add the sticky class to the nav element
+  } else {
+    nav.classList.remove('sticky'); // remove the sticky class from the nav element
+  }
+};
+
+const headerObserver = new IntersectionObserver(stickyNav, {
+  root: null, // null means the viewport
+  threshold: 0, // 0 means the target element is not visible at all
+  rootMargin: `-${navHeight}px`, // margin around the root element (viewport by default), negative value means the target element is not visible until it is 90px above the viewport
+  // this is used to make the sticky navigation appear when the header is scrolled out of view
+});
+headerObserver.observe(header); // observe the header element
+////////////////////////////////////////////////////
+// Reveling elements on scroll
+const revealSection = function (entries, observer) {
+  entries.forEach(entry => {
+    if (!entry.isIntersecting) return; // if the target element is not intersecting with the root element (viewport by default)
+
+    entry.target.classList.remove('section--hidden'); // remove the hidden class from the target element
+
+    observer.unobserve(entry.target); // stop observing the target element after it has been revealed
+    // this is used to stop observing the target element after it has been revealed, so that it doesn't trigger the callback function again
+  });
+};
+
+const sectionObserver = new IntersectionObserver(revealSection, {
+  root: null, // null means the viewport
+  threshold: 0.15, // 15% of the target element is visible in the root element
+});
+
+allSections.forEach(function (section) {
+  sectionObserver.observe(section); // observe each section element
+  section.classList.add('section--hidden'); // add a class to hide the section elements initially
+  // this is used to hide the section elements initially, so that they can be revealed when they are scrolled into view
+});
