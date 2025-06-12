@@ -475,3 +475,32 @@ allSections.forEach(function (section) {
   section.classList.add('section--hidden'); // add a class to hide the section elements initially
   // this is used to hide the section elements initially, so that they can be revealed when they are scrolled into view
 });
+////////////////////////////////////////////////////
+// Lazy loading images
+// images can impact the performance of the page, so we can lazy load them
+const imgTargets = document.querySelectorAll('img[data-src]'); // select all images with the data-src attribute
+
+const loadImg = function (entries, observer) {
+  const [entry] = entries; // destructuring assignment to get the first entry
+  // console.log(entry);
+
+  if (!entry.isIntersecting) return; // if the target element is not intersecting with the root element (viewport by default)
+  // replace the src attribute with the data-src attribute
+  entry.target.src = entry.target.dataset.src; // set the src attribute to the value of the data-src attribute
+  // replacing the src attribute with the data-src attribute happens behind the scense
+  // the browser will automatically load the image when the src attribute is set
+  // Ant it will omit the load event, so we have to listen to the load event to remove the loading class
+  entry.target.addEventListener('load', function () {
+    entry.target.classList.remove('lazy-img'); // remove the lazy-img class from the target element
+  });
+  observer.unobserve(entry.target); // stop observing the target element after it has been loaded
+  // this is used to stop observing the target element after it has been loaded, so that it doesn't trigger the callback function again
+};
+const imgObserver = new IntersectionObserver(loadImg, {
+  root: null, // null means the viewport
+  threshold: 0, // 0 means the target element is not visible at all
+  rootMargin: '200px', // margin around the root element (viewport by default), negative value means the target element is not visible until it is 200px above the viewport
+  // this is used to make the lazy loading images appear before when they are scrolled into view
+});
+
+imgTargets.forEach(img => imgObserver.observe(img));
