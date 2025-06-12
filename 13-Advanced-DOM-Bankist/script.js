@@ -597,3 +597,38 @@ const slider = function () {
 };
 
 slider();
+////////////////////////////////////////////////////
+// Lifecycle DOM events
+// DOMContentLoaded event: it is fired when the initial HTML document has been completely loaded and parsed into DOM tree, without waiting for stylesheets, images, and subframes to finish loading
+// all scripts must be downloaded and executed before this event is fired
+document.addEventListener('DOMContentLoaded', function (e) {
+  console.log('HTML parsed and DOM tree built!', e);
+  // When we want to execute JS after the DOM is fully loaded, do we need to use this event?
+  // No, we can just put the script tag at the end of the body element
+});
+
+// #### event: it is fired when the whole page has loaded, including all dependent resources such as stylesheets and images
+window.addEventListener('load', function (e) {
+  console.log('Page fully loaded', e);
+});
+
+// beforeunload event: it is fired when the user is about to leave the page, for example, when they close the tab or navigate to another page
+window.addEventListener('beforeunload', function (e) {
+  e.preventDefault(); // prevent the default behavior of the event
+  console.log(e); // e is the event object that contains information about the event
+  e.returnValue = ''; // this is required for the event to work in some browsers
+  // it shows a confirmation dialog to the user before leaving the page
+  // this is used to prevent the user from accidentally leaving the page
+  // but it is not recommended to use this event, because it can be annoying for the user
+  // and it is not supported in all browsers
+  // it is better to use a custom confirmation dialog instead
+  // if you want to prevent the user from leaving the page, you can use this event
+  // but it is not recommended to use this event, because it can be annoying for the user
+});
+////////////////////////////////////////////////////
+// Effective script loading : Deferring and async
+// Never include script tag in the head because it will block the rendering of the page
+// putting script tag at the end of the body element is not always perfect, because the script could have been downloaded before while the HTML is still parsed
+// defer attribute: it tells the browser to load the script in the background and execute it after the HTML document has been completely loaded and parsed
+// async attribute: it tells the browser to load the script in the background and execute it as soon as it is loaded, without waiting for the HTML document to be completely loaded and parsed
+// async and defer do not make sense in the body element, because the script will be executed after the HTML document has been completely loaded and parsed anyway

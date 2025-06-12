@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -12,6 +12,8 @@
     />
     <link rel="stylesheet" href="style.css" />
     <title>Bankist | When Banking meets Minimalist</title>
+    <!-- By using defer, the page loading is faster, because the browser doesn't need to fetch it. (It fetched it in the background while the HTML is loaded) -->
+    <script defer src="script.js"></script>
   </head>
   <body>
     <header class="header">
@@ -354,6 +356,6 @@
     </div>
     <div class="overlay hidden"></div>
 
-    <script src="script.js"></script>
+    <!-- <script src="script.js"></script> -->
   </body>
 </html>

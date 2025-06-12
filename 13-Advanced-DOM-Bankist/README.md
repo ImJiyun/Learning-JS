@@ -661,3 +661,121 @@ imgTargets.forEach(img => imgObserver.observe(img));
 - It fires repeatedly when the key is held down
 - use case: previously used for detecting character input (e.g., typing letters).
 - NOTE : it is deprecated
+
+---
+
+### Browser Rendering Process
+
+```
+[1] HTML Parsing → [2] Resource Request (CSS, JS, Images) →
+[3] DOM & CSSOM Creation → [4] Render Tree Construction →
+[5] Layout → [6] Paint → [7] Composition
+```
+
+#### 1. HTML Parsing (DOM Creation)
+
+- When a user visits a website, the browser starts by **parsing the HTML** from top to bottom.
+- As it parses, it builds the **DOM (Document Object Model)**.
+- When it encounters external resources like `<link>`, `<script>`, or `<img>`, it **requests them asynchronously**.
+
+---
+
+#### 2. CSS Parsing (CSSOM Creation)
+
+- Upon encountering `<link rel="stylesheet">` or `<style>`, the browser **downloads and parses the CSS**, creating the **CSSOM (CSS Object Model)**.
+- CSS is a **render-blocking resource**, meaning rendering cannot proceed until the CSSOM is fully constructed.
+
+---
+
+#### 3. JavaScript Execution
+
+- `<script>` tags will **block HTML parsing by default** until the script is downloaded and executed.
+
+  - Scripts with `defer` are executed after the HTML is parsed.
+  - Scripts with `async` are executed as soon as they are ready (can interrupt parsing).
+
+- Since JS can modify the DOM or CSSOM, execution order matters.
+
+---
+
+#### 4. Render Tree Construction
+
+- Once both the DOM and CSSOM are ready, the browser combines them into a **Render Tree**.
+
+  - This tree includes only the **visible elements** (e.g., elements with `display: none` are excluded).
+
+---
+
+#### 5. Layout (also called Reflow)
+
+- The browser calculates the **exact size and position** of each element based on the Render Tree.
+- This is called the **Layout** step.
+- It is **performance-intensive**, so frequent layout changes can cause slowdowns.
+
+---
+
+#### 6. Paint
+
+- The browser then **paints** pixels onto the screen for each node in the Render Tree.
+
+  - This includes drawing text, backgrounds, borders, shadows, etc.
+
+---
+
+#### 7. Composition
+
+- The painted content is divided into **layers** (especially when using things like `transform`, `video`, or `position: fixed`).
+- In the Composition step, the browser uses the **GPU to combine these layers** into the final image shown on the screen.
+
+---
+
+### Performance Bottlenecks by Stage
+
+| Stage                | Bottleneck Risk | Notes                                                                     |
+| -------------------- | --------------- | ------------------------------------------------------------------------- |
+| JavaScript Execution | High            | Synchronous scripts can block rendering                                   |
+| Layout               | High            | DOM changes like `offsetTop`, `getBoundingClientRect` can trigger reflows |
+| Paint                | Medium          | Complex shadows, gradients, or text effects are costly                    |
+| Composition          | Medium          | Too many layers or animations can strain the GPU                          |
+
+---
+
+### Lifecycle DOM events
+
+#### 1. `DOMContentLoaded`
+
+- fired when the initial HTML document has been completely loaded and parsed into DOM tree, without waiting for stylesheets, images, and subframes to finish loading
+- all scripts must be downloaded and executed before this event is fired
+
+#### 2. `load`
+
+- fired when the whole page has loaded, including all dependent resources such as stylesheets and images
+
+#### 3. `beforeunload`
+
+- fired when the user is about to leave the page, for example, when they close the tab or navigate to another page
+
+---
+
+### Regular vs Async vs Defer
+
+- Never include script tag in the head because it will block the rendering of the page
+- async and defer do not make sense in the body element, because the script will be executed after the HTML document has been completely loaded and parsed anyway
+
+1. End of body
+
+- Scripts are fetched and executed **after the HTML is completely parsed**
+- Use when needed to support old browsers
+
+2. Async in Head
+
+- Scripts are fetched **asynchronously** and executed **immediately**
+- Usually the `DOMContentLoaded` event waits for _all_ scripts to execute, except for async scripts. So `DOMContentLoaded` does not wait for an async script
+- Scripts are _NOT_ guaranteed to execute in order
+
+3. Defer in Head
+
+- - Scripts are fetched **asynchronously** and executed **after the HTML is completely parsed**
+- `DOMContentLoaded` event fires after the defer script is executed
+- Scripts are executed _in order_
+- Overall, it's the best solution
