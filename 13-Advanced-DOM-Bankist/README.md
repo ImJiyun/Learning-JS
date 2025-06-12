@@ -633,3 +633,31 @@ const imgObserver = new IntersectionObserver(loadImg, {
 
 imgTargets.forEach(img => imgObserver.observe(img));
 ```
+
+---
+
+### Slider Component
+
+#### Events related to keyboard
+
+1. `keydown`
+
+- It fires when a key is pressed down
+- It works with all keys
+- It fires repeatedly when the key is held down
+- use case: detecting key presses, implementing shortcuts
+
+2. `keyup`
+
+- It fires when a key is released
+- It works with all keys
+- It fires only once per key release
+- use case : detecting when the user has finished pressing a key (e.g., for input validation or search)
+
+3. `keypress`
+
+- It fires when a character-producing key is pressed down
+- It does NOT work with all keys
+- It fires repeatedly when the key is held down
+- use case: previously used for detecting character input (e.g., typing letters).
+- NOTE : it is deprecated

@@ -472,7 +472,7 @@ const sectionObserver = new IntersectionObserver(revealSection, {
 
 allSections.forEach(function (section) {
   sectionObserver.observe(section); // observe each section element
-  section.classList.add('section--hidden'); // add a class to hide the section elements initially
+  // section.classList.add('section--hidden'); // add a class to hide the section elements initially
   // this is used to hide the section elements initially, so that they can be revealed when they are scrolled into view
 });
 ////////////////////////////////////////////////////
@@ -504,3 +504,96 @@ const imgObserver = new IntersectionObserver(loadImg, {
 });
 
 imgTargets.forEach(img => imgObserver.observe(img));
+////////////////////////////////////////////////////
+// Slider component
+const slider = function () {
+  const slides = document.querySelectorAll('.slide');
+  const btnLeft = document.querySelector('.slider__btn--left');
+  const btnRight = document.querySelector('.slider__btn--right');
+  const dotsContainer = document.querySelector('.dots');
+
+  let curSlide = 0; // current slide index
+  const maxSlide = slides.length; // total number of slides
+
+  // Functions
+  const createDots = function () {
+    slides.forEach((_, i) => {
+      // _ is a placeholder for the first argument, which we don't need
+      dotsContainer.insertAdjacentHTML(
+        'beforeend',
+        `<button class="dots__dot" data-slide="${i}"></button>`,
+      );
+    });
+  };
+
+  const activateDot = function (slide) {
+    document.querySelectorAll('.dots__dot').forEach(dot => {
+      dot.classList.remove('dots__dot--active'); // remove the active class from all dots
+    });
+    document
+      .querySelector(`.dots__dot[data-slide="${slide}"]`)
+      .classList.add('dots__dot--active'); // add the active class to the dot that corresponds to the current slide
+  };
+
+  const goToSlide = function (slide) {
+    slides.forEach((s, i) => {
+      s.style.transform = `translateX(${100 * (i - slide)}%)`; // translateX moves the element horizontally
+      // we use 100 * (i - slide) to move each slide to the right by 100% of its width
+    });
+  };
+
+  const nextSlide = function () {
+    if (curSlide === maxSlide - 1)
+      curSlide = 0; // if we are at the last slide, go back to the first slide
+    else curSlide++; // otherwise, go to the next slide
+
+    // translate value : -100%, 0%, 100%, 200%...
+    goToSlide(curSlide);
+    activateDot(curSlide); // activate the dot that corresponds to the current slide
+  };
+
+  const prevSlide = function () {
+    if (curSlide === 0)
+      curSlide = maxSlide - 1; // if we are at the first slide, go to the last slide
+    else curSlide--; // otherwise, go to the previous slide
+
+    // translate value : -200%, -100%, 0%, 100%...
+    goToSlide(curSlide);
+    activateDot(curSlide); // activate the dot that corresponds to the current slide
+  };
+
+  const init = function () {
+    // translate value : 0%, 100%, 200%, 300%...
+    goToSlide(0); // go to the first slide
+    createDots(); // create dots for each slide
+    activateDot(0); // activate the first dot
+  };
+
+  init();
+
+  // Event handlers
+  btnRight.addEventListener('click', nextSlide);
+  btnLeft.addEventListener('click', prevSlide);
+
+  // keyboard navigation
+  document.addEventListener('keydown', function (e) {
+    console.log(e);
+    if (e.key === 'ArrowLeft') prevSlide();
+    else if (e.key === 'ArrowRight') nextSlide();
+    // ArrowLeft and ArrowRight are the keys for left and right arrows
+    // we can also use e.code to get the code of the key that was pressed
+    // e.code is more reliable than e.key, because it returns the code of the key that was pressed, regardless of the keyboard layout
+    // e.key is the value of the key that was pressed, which can change depending on the keyboard layout
+  });
+
+  // dots navigation (using event delegation)
+  dotsContainer.addEventListener('click', function (e) {
+    if (!e.target.classList.contains('dots__dot')) return; // if the clicked element is not a dot, return early
+
+    const { slide } = e.target.dataset; // get the slide index from the data-slide attribute of the clicked dot
+    goToSlide(slide); // go to the slide with the index of the clicked dot
+    activateDot(slide); // activate the dot with the index of the clicked dot
+  });
+};
+
+slider();
