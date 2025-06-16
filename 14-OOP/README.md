@@ -284,3 +284,282 @@ console.dir(
 ```js
 console.dir(x => x + 1); // [Function: x]
 ```
+
+## ES6 Classes
+
+- Classes in JavaScript don't work like traditional classes
+- They are syntatic suger
+- They still implement prototypal inheritance
+
+### `constructor`
+
+```js
+class PersonCl {
+  constructor(firstName, birthYear) {
+    // instance properties
+    this.firstName = firstName;
+    this.birthYear = birthYear;
+  }
+}
+```
+
+```js
+const jane = new PersonCl('Jane', 1992);
+console.log(jane); // PersonCl { firstName: 'Jane', birthYear: 1992 }
+```
+
+- when we create an instance from a class, the constructor method is called
+- constructor method is a special method that is called when we create an object from the class
+
+### instance method
+
+```js
+class PersonCl {
+  constructor(firstName, birthYear) {
+    // instance properties
+    this.firstName = firstName;
+    this.birthYear = birthYear;
+  }
+  // instance method
+  calcAge() {
+    console.log(2025 - this.birthYear);
+  }
+}
+```
+
+```js
+jane.calcAge(); // 33
+
+console.log(jane.__proto__ === PersonCl.prototype); // true
+```
+
+- every method defined in the class (outside of the constructor) is added to the prototype of the class
+- so all instances of the class share the same method
+- this is more memory efficient than adding methods to the constructor function (all instances would have their own copy of the method)
+
+```js
+PersonCl.prototype.greet = function () {
+  console.log(`Hello, my name is ${this.firstName}`);
+};
+jane.greet(); // Hello, my name is Jane
+```
+
+- We can still manually add methods to the prototype, even when using classes
+- The code above is same as:
+
+```js
+class PersonCl {
+  constructor(firstName, birthYear) {
+    // instance properties
+    this.firstName = firstName;
+    this.birthYear = birthYear;
+  }
+  greet() {
+    console.log(`Hello, my name is ${this.firstName}`);
+  }
+}
+```
+
+### Getters and Setters
+
+- They are accessors that allow us to define methods that can be used as properties
+- Getters are defined with the `get` keyword
+- Setters are defined with the `set` keyword
+
+```js
+const account = {
+  owner: 'Jiyun',
+  movements: [200, 450, -400, 3000],
+
+  get latest() {
+    return this.movements.slice(-1).pop();
+  },
+
+  // any setter method must have exactly one parameter
+  set latest(mov) {
+    this.movements.push(mov);
+  },
+};
+
+console.log(account.latest); // 3000
+account.latest = 50; // we can use the setter like a property
+console.log(account.movements); // [ 200, 450, -400, 3000, 50 ]
+console.log(account.latest); // 50
+```
+
+### getters and setters in a class
+
+```js
+class PersonCl {
+  constructor(fullName, birthYear) {
+    // instance properties
+    this.fullName = fullName;
+    this.birthYear = birthYear;
+  }
+
+  calcAge() {
+    console.log(2025 - this.birthYear);
+  }
+
+  get age() {
+    return 2025 - this.birthYear;
+  }
+
+  // if the name of setter method is the same as the name of a property, it will override the property
+  set fullName(name) {
+    console.log(name);
+    if (name.includes(' ')) this._fullName = name;
+    else console.log(`${name} is not a full name!`);
+  }
+
+  get fullName() {
+    return this._fullName;
+  }
+}
+```
+
+```js
+const walter = new PersonCl('Walter White', 1965);
+walter.fullName = 'Walter'; // Walter is not a full name!
+walter.fullName = 'Walter White'; // no error
+console.log(walter.fullName); // Walter White
+```
+
+#### **Getter**
+
+- A **getter** is called when you **access** a property.
+- It allows you to define custom logic for returning a value.
+- We don’t use parentheses when calling it.
+
+```js
+get age() {
+  return 2025 - this.birthYear;
+}
+```
+
+- Usage:
+
+  ```js
+  person.age; // This automatically calls the getter method
+  ```
+
+---
+
+#### **Setter**
+
+- A **setter** is called when you **assign a value** to a property.
+- It can include validation or other logic before saving the value.
+
+```js
+set fullName(name) {
+  if (name.includes(' ')) this._fullName = name;
+  else console.log(`${name} is not a full name!`);
+}
+```
+
+- Usage:
+
+  ```js
+  person.fullName = 'Charlotte Windsor'; // Calls the setter
+  ```
+
+#### How it works
+
+```js
+constructor(fullName, birthYear) {
+  this.fullName = fullName; // Calls the setter
+  this.birthYear = birthYear;
+}
+```
+
+- When `this.fullName = fullName` is executed, it actually **calls the setter** `set fullName(...)`, not directly assign the value.
+- Inside the setter, the name is validated before assigning to `this._fullName`.
+
+---
+
+#### Why use `_fullName`?
+
+- If we try to assign to `this.fullName` inside the setter itself, it would recursively call the setter again and again → **infinite loop**.
+- To avoid that, developers use a different internal property name (like `_fullName`).
+- This is a **common convention**, though the underscore is not required.
+
+---
+
+#### How the getter is used
+
+```js
+console.log(person.fullName);
+```
+
+- When we read `person.fullName`, it actually **calls the getter** `get fullName()`, which returns `this._fullName`
+
+## static method
+
+- Static methods are methods that are called **on the class itself**, not on instances of the class
+- They are typically used for **utility functions** or **helper methods** that don’t need access to instance-specific data
+- Example: `Array.from()` is a static method provided by the built-in Array class
+
+### Constructor Functions
+
+```js
+Person.heyThere = function () {
+  console.log('Hey there!');
+  // this keyword refers to the object that the method is called on
+  // in this case, it's the Person class itself
+  console.log(this); // Person
+};
+Person.heyThere(); // Hey there!
+```
+
+- Here, we manually add a static method to the constructor function `Person`
+- `this` inside the static method refers to the constructor function (`Person`), not an instance
+
+```js
+anne.heyThere(); // TypeError: anne.heyThere is not a function. (In 'anne.heyThere()', 'anne.heyThere' is undefined)
+```
+
+- We cannot call a static method on an instance like `jane`
+- Static methods belong **only** to the class (or constructor function), not to its instances
+
+### Classes
+
+```js
+class PersonCl {
+  constructor(fullName, birthYear) {
+    // instance properties
+    this.fullName = fullName;
+    this.birthYear = birthYear;
+  }
+  // instance method
+  calcAge() {
+    console.log(2025 - this.birthYear);
+  }
+
+  get age() {
+    return 2025 - this.birthYear;
+  }
+
+  set fullName(name) {
+    console.log(name);
+    if (name.includes(' ')) this._fullName = name;
+    else console.log(`${name} is not a full name!`);
+  }
+
+  get fullName() {
+    return this._fullName;
+  }
+
+  // Static Method
+  static heyThere() {
+    console.log('Hey there!');
+  }
+}
+```
+
+```js
+PersonCl.heyThere(); // Hey there!
+```
+
+- The `static` keyword is used to define static methods in a class
+- `PersonCl.heyThere()` works because the method is defined on the class
+- `jane.heyThere()` would throw an error because the method is not on the prototype or instance

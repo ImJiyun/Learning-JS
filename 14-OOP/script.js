@@ -108,8 +108,126 @@ console.dir(h1.__proto__.__proto__.__proto__); // Element.prototype
 console.dir(h1.__proto__.__proto__.__proto__.__proto__); // Node.prototype
 console.dir(h1.__proto__.__proto__.__proto__.__proto__.__proto__); // EventTarget.prototype
 console.dir(h1.__proto__.__proto__.__proto__.__proto__.__proto__.__proto__); // Object.prototype
-console.dir(h1.__proto__.__proto__.__proto__.__proto__.__proto__.__proto__.__proto__); // null
+console.dir(
+  h1.__proto__.__proto__.__proto__.__proto__.__proto__.__proto__.__proto__,
+); // null
 
 console.dir(x => x + 1); // [Function: x]
 // functions are also objects and have their own prototype
 // so we can call methods on functions
+/////////////////////////////
+// Prototypal inheritance with classes
+// ES6 classes are just syntactical sugar over constructor functions
+
+// class expression
+// const PersonCl = class {};
+
+// behind the scene, classes are functions
+
+// class declaration
+class PersonCl {
+  // when we create an instance from a class, the constructor method is called
+  // constructor method is a special method that is called when we create an object from the class
+  constructor(fullName, birthYear) {
+    // instance properties
+    this.fullName = fullName;
+    this.birthYear = birthYear;
+  }
+  // instance method
+  // every method defined in the class (outside of the constructor) is added to the prototype of the class
+  // so all instances of the class share the same method
+  // this is more memory efficient than adding methods to the constructor function (all instances would have their own copy of the method)
+  calcAge() {
+    console.log(2025 - this.birthYear);
+  }
+
+  // getter methods are special methods that allow us to access properties as if they were regular properties
+  // they are defined with the 'get' keyword
+  // they are attached to the prototype of the class
+  // we can use them like properties, without calling them as methods
+  get age() {
+    return 2025 - this.birthYear;
+  }
+
+  // if the name of setter method is the same as the name of a property, it will override the property
+  set fullName(name) {
+    console.log(name);
+    if (name.includes(' ')) this._fullName = name;
+    else console.log(`${name} is not a full name!`);
+  }
+
+  get fullName() {
+    return this._fullName;
+  }
+  // Static Method
+  static heyThere() {
+    console.log('Hey there!');
+  }
+}
+
+const jane = new PersonCl('Jane Davis', 1992);
+console.log(jane); // PersonCl { firstName: 'Jane', birthYear: 1992 }
+jane.calcAge(); // 33
+
+console.log(jane.__proto__); // PersonCl.prototype
+console.log(jane.__proto__ === PersonCl.prototype); // true
+
+PersonCl.prototype.greet = function () {
+  console.log(`Hello, my name is ${this.firstName}`);
+};
+jane.greet(); // Hello, my name is Jane
+console.log(jane.__proto__.hasOwnProperty('greet')); // true
+console.log(jane.hasOwnProperty('greet')); // false
+
+// 1. Classes are not hoisted, so we cannot use them before they are declared
+// 2. Just like functions, classes are first-class citizens, so we can pass them as arguments, return them from functions, and assign them to variables
+// 3. Classes are executed in strict mode, so we don't need to use 'use strict' at the top of the file
+// 4. Classes can have static methods, which are called on the class itself, not on the instance
+/////////////////////////////
+// Getters and Setters
+// They are accessors that allow us to define methods that can be used as properties
+const account = {
+  owner: 'Jiyun',
+  movements: [200, 450, -400, 3000],
+
+  get latest() {
+    return this.movements.slice(-1).pop();
+  },
+
+  // any setter method must have exactly one parameter
+  set latest(mov) {
+    this.movements.push(mov);
+  },
+};
+
+console.log(account.latest); // 3000
+account.latest = 50; // we can use the setter like a property
+console.log(account.movements); // [ 200, 450, -400, 3000, 50 ]
+console.log(account.latest); // 50
+
+console.log(jane.age); // 33
+
+// getters and setters are useful for data validation
+const walter = new PersonCl('Walter White', 1965);
+walter.fullName = 'Walter'; // Walter is not a full name!
+walter.fullName = 'Walter White'; // no error
+console.log(walter.fullName); // Walter White
+////////////////////
+// Static methods
+// static methods are called on the class itself, not on the instance
+// they are defined with the 'static' keyword
+// they are attached to the class prototype, not the instance prototype (__proto__)
+// they are attacted to entire constructor function, not to the instance
+// from method is a static method on Array
+// They are useful for utility functions that are not related to a specific instance
+Person.heyThere = function () {
+  console.log('Hey there!');
+  // this keyword refers to the object that the method is called on
+  // in this case, it's the Person class itself
+  console.log(this); // Person
+};
+Person.heyThere(); // Hey there!
+// anne.heyThere(); // TypeError: anne.heyThere is not a function. (In 'anne.heyThere()', 'anne.heyThere' is undefined)
+
+PersonCl.heyThere(); // Hey there!
+// jane.heyThere(); // TypeError: jane.heyThere is not a function. (In 'jane.heyThere()', 'jane.heyThere' is undefined)
