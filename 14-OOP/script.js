@@ -231,3 +231,41 @@ Person.heyThere(); // Hey there!
 
 PersonCl.heyThere(); // Hey there!
 // jane.heyThere(); // TypeError: jane.heyThere is not a function. (In 'jane.heyThere()', 'jane.heyThere' is undefined)
+//////////////////////
+// Object.create()
+// Object.create() is a method that allows us to create an object with a specific prototype
+const personProto = {
+  calcAge() {
+    console.log(2025 - this.birthYear);
+  },
+  species: 'Human',
+  init(firstName, birthYear) {
+    this.firstName = firstName;
+    this.birthYear = birthYear;
+  },
+};
+// we can create an object with the personProto as its prototype
+const jiyun = Object.create(personProto);
+jiyun.firstName = 'Jiyun';
+jiyun.birthYear = 1990;
+console.log(jiyun); // { firstName: 'Jiyun', birthYear: 1990 }
+
+console.log(jiyun.__proto__); // { calcAge: [Function: calcAge], species: 'Human' }
+console.log(jiyun.__proto__ === personProto); // true
+
+jiyun.calcAge(); // 35
+console.log(jiyun.species); // Human
+console.log(jiyun.hasOwnProperty('firstName')); // true
+console.log(jiyun.hasOwnProperty('birthYear')); // true
+console.log(jiyun.hasOwnProperty('calcAge')); // false
+console.log(jiyun.hasOwnProperty('species')); // false
+console.log(jiyun.__proto__.hasOwnProperty('calcAge')); // true
+console.log(jiyun.__proto__.hasOwnProperty('species')); // true
+console.log(jiyun.__proto__.hasOwnProperty('firstName')); // false
+console.log(jiyun.__proto__.hasOwnProperty('birthYear')); // false
+// Object.create() is useful when we want to create an object with a specific prototype without using a constructor function
+
+const sarah = Object.create(personProto);
+sarah.init('Sarah', 1995);
+console.log(sarah); // { firstName: 'Sarah', birthYear: 1995 }
+sarah.calcAge(); // 30

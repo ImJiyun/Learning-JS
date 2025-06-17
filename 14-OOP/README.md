@@ -427,9 +427,9 @@ console.log(walter.fullName); // Walter White
 
 #### **Getter**
 
-- A **getter** is called when you **access** a property.
-- It allows you to define custom logic for returning a value.
-- We don’t use parentheses when calling it.
+- A **getter** is called when we **access** a property
+- It allows you to define custom logic for returning a value
+- We don’t use parentheses when calling it
 
 ```js
 get age() {
@@ -447,8 +447,8 @@ get age() {
 
 #### **Setter**
 
-- A **setter** is called when you **assign a value** to a property.
-- It can include validation or other logic before saving the value.
+- A **setter** is called when we **assign a value** to a property
+- It can include validation or other logic before saving the value
 
 ```js
 set fullName(name) {
@@ -472,16 +472,16 @@ constructor(fullName, birthYear) {
 }
 ```
 
-- When `this.fullName = fullName` is executed, it actually **calls the setter** `set fullName(...)`, not directly assign the value.
-- Inside the setter, the name is validated before assigning to `this._fullName`.
+- When `this.fullName = fullName` is executed, it actually **calls the setter** `set fullName(...)`, not directly assign the value
+- Inside the setter, the name is validated before assigning to `this._fullName`
 
 ---
 
 #### Why use `_fullName`?
 
-- If we try to assign to `this.fullName` inside the setter itself, it would recursively call the setter again and again → **infinite loop**.
-- To avoid that, developers use a different internal property name (like `_fullName`).
-- This is a **common convention**, though the underscore is not required.
+- If we try to assign to `this.fullName` inside the setter itself, it would recursively call the setter again and again → **infinite loop**
+- To avoid that, developers use a different internal property name (like `_fullName`)
+- This is a **common convention**, though the underscore is not required
 
 ---
 
@@ -563,3 +563,53 @@ PersonCl.heyThere(); // Hey there!
 - The `static` keyword is used to define static methods in a class
 - `PersonCl.heyThere()` works because the method is defined on the class
 - `jane.heyThere()` would throw an error because the method is not on the prototype or instance
+
+## `Object.create()`
+
+- a method used to create a new object with a specified prototype and optional property descriptors
+
+```js
+Object.create(prototype, propertiesObject);
+```
+
+- `prototype`: The object which should be the prototype of the newly-created object
+- `propertiesObject` (optional): An object whose properties are added to the new object with the same behavior as `Object.defineProperties()`
+
+```js
+const personProto = {
+  calcAge() {
+    console.log(2025 - this.birthYear);
+  },
+  species: 'Human',
+  init(firstName, birthYear) {
+    this.firstName = firstName;
+    this.birthYear = birthYear;
+  },
+};
+
+const jiyun = Object.create(personProto);
+jiyun.firstName = 'Jiyun';
+jiyun.birthYear = 1990;
+```
+
+- `jiyun` inherits from person, but it's a separate object
+
+```javascript
+console.log(jiyun.hasOwnProperty('firstName')); // true
+console.log(jiyun.hasOwnProperty('birthYear')); // true
+```
+
+These return `true` because `firstName` and `birthYear` are **directly defined on the `jiyun` object**
+
+- Either we assigned them directly (e.g., `jiyun.firstName = 'Jiyun'`),
+- or we set them using a method like `init`, which assigns them to `this` (which refers to `jiyun`)
+
+```javascript
+console.log(jiyun.__proto__.hasOwnProperty('firstName')); // false
+console.log(jiyun.__proto__.hasOwnProperty('birthYear')); // false
+```
+
+These return `false` because `firstName` and `birthYear` are **not defined directly on `jiyun.__proto__`**, the same as `personProto`
+
+- `hasOwnProperty()` only checks **direct (own) properties** of the object
+- Since `firstName` and `birthYear` were added directly to `jiyun`, not `personProto`, they are not own properties of `jiyun.__proto__`
