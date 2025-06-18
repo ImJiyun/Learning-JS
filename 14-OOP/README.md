@@ -613,3 +613,196 @@ These return `false` because `firstName` and `birthYear` are **not defined direc
 
 - `hasOwnProperty()` only checks **direct (own) properties** of the object
 - Since `firstName` and `birthYear` were added directly to `jiyun`, not `personProto`, they are not own properties of `jiyun.__proto__`
+
+## Inheritance
+
+### Constructor Functions
+
+We use constructor functions and manually set up inheritance through `call()` and `Object.create()`
+
+```js
+const Person = function (firstName, birthYear) {
+  // Instance properties: these will be attached directly to the created object
+  this.firstName = firstName;
+  this.birthYear = birthYear;
+};
+```
+
+- This is a constructor function for `Person`
+- When called with `new`, it creates a new object and binds `this` to that object
+
+```js
+Person.prototype.calcAge = function () {
+  console.log(2025 - this.birthYear);
+};
+```
+
+- This defines a method on the prototype, not on each instance
+- All instances created with `new Person()` will share this method (memory-efficient)
+
+```js
+const Student = function (firstName, birthYear, course) {
+  // We don't use Person() directly here because regular function does not have 'this' context in global scope (strict mode)
+  // Instead, we use call() to call Person and bind its 'this' to the new Student instance
+  Person.call(this, firstName, birthYear);
+
+  // Add a new property specific to Student
+  this.course = course;
+};
+```
+
+- We're trying to "inherit" properties from `Person`, so we use `Person.call(...)` to copy them
+- This is called _constructor inheritance_ (also known as constructor borrowing)
+
+```js
+Student.prototype = Object.create(Person.prototype);
+```
+
+- It sets up the prototype chain so that instances of `Student` also inherit methods from `Person.prototype`.
+- `Student.prototype` now points to an object that delegates to `Person.prototype`
+
+```js
+Student.prototype.introduce = function () {
+  console.log(
+    `Hello, my name is ${this.firstName} and I study ${this.course}.`,
+  );
+};
+```
+
+- We add a method specific to `Student`, not present in `Person`
+
+```js
+const edward = new Student('Edward', 1998, 'Computer Science');
+```
+
+- This creates a `Student` object that:
+
+  - Has its own properties: `firstName`, `birthYear`, `course`
+  - Inherits `introduce()` from `Student.prototype`
+  - Inherits `calcAge()` from `Person.prototype` via the prototype chain
+
+```js
+edward.introduce(); // Hello, my name is Edward and I study Computer Science.
+edward.calcAge(); // 27
+```
+
+```js
+console.log(edward.__proto__); // Student.prototype
+console.log(edward.__proto__.__proto__); // Person.prototype
+console.log(edward.__proto__.__proto__ === Person.prototype); // true
+```
+
+- This shows the prototype chain:
+
+  - `edward` → `Student.prototype` → `Person.prototype` → `Object.prototype`
+
+```js
+console.log(edward instanceof Student); // true
+console.log(edward instanceof Person); // true
+console.log(edward instanceof Object); // true
+```
+
+- `instanceof` checks the prototype chain
+- Since `edward.__proto__` → `Student.prototype` and that in turn leads to `Person.prototype`, all `instanceof` checks pass
+
+```js
+Student.prototype.constructor = Student;
+```
+
+- Important fix!
+- When we did `Student.prototype = Object.create(...)`, we _lost_ the original `constructor` reference
+- Now we restore it so that `edward.constructor === Student` again
+
+---
+
+### ES6 Classes (Syntactic Sugar for Constructor Functions)
+
+```js
+class StudentCl extends PersonCl {
+  constructor(fullName, birthYear, course) {
+    super(fullName, birthYear); // call the constructor of PersonCl
+    this.course = course;
+  }
+
+  introduce() {
+    console.log(
+      `Hello, my name is ${this.fullName} and I study ${this.course}.`,
+    );
+  }
+
+  calcAge() {
+    console.log(
+      `I'm ${2025 - this.birthYear} years old and I feel more like ${2025 - this.birthYear + 10} years old.`,
+    );
+  }
+}
+```
+
+- `class` is syntactic sugar for constructor functions
+- `extends` automatically sets the prototype chain
+- `super()` is mandatory before using `this` in the constructor. It calls the parent constructor (`PersonCl`)
+- We can override methods by redefining them in the subclass, like `calcAge()` here
+
+```js
+const charlie = new StudentCl('Charlie Brown', 2000, 'Mathematics');
+charlie.introduce(); // Hello, my name is Charlie Brown and I study Mathematics.
+charlie.calcAge(); // I'm 25 years old and I feel more like 35 years old.
+```
+
+- The same logic as before: `charlie` inherits from `StudentCl`, which inherits from `PersonCl`
+
+---
+
+### Object.create() (Pure Prototypal Inheritance)
+
+This style doesn't use constructors or classes. It uses **prototype chaining directly**
+
+```js
+const jake = Object.create(personProto);
+```
+
+- Creates an empty object `jake` that delegates to `personProto`
+
+```js
+const StudentProto = Object.create(personProto);
+```
+
+- Create a prototype for students that itself inherits from `personProto`
+
+```js
+StudentProto.init = function (firstName, birthYear, course) {
+  personProto.init.call(this, firstName, birthYear);
+  this.course = course;
+};
+```
+
+- `init()` works like a constructor, but it must be called manually
+- It calls the parent `init` to initialize shared properties
+
+```js
+StudentProto.introduce = function () {
+  console.log(
+    `Hello, my name is ${this.firstName} and I study ${this.course}.`,
+  );
+};
+
+StudentProto.calcAge = function () {
+  console.log(2025 - this.birthYear);
+};
+```
+
+- We manually define your methods on the prototype object
+
+```js
+const kate = Object.create(StudentProto);
+kate.init('Kate', 1999, 'Physics');
+kate.introduce(); // Hello, my name is Kate and I study Physics.
+kate.calcAge(); // 26
+```
+
+- `kate` is an object that:
+
+  - Delegates to `StudentProto`
+  - Which itself delegates to `personProto`
+
+- This is the most **low-level**, explicit form of prototype-based inheritance in JS.

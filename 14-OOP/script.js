@@ -269,3 +269,108 @@ const sarah = Object.create(personProto);
 sarah.init('Sarah', 1995);
 console.log(sarah); // { firstName: 'Sarah', birthYear: 1995 }
 sarah.calcAge(); // 30
+/////////////////////////////////////////////////
+// Inheritance between classes
+/*
+const Person = function (firstName, birthYear) {
+  // instance properties
+  this.firstName = firstName;
+  this.birthYear = birthYear;
+
+  // BAD practice: do not add methods to the constructor function
+  // if we add methods to the constructor function, every instance will have its own copy of the method
+  // it will increase memory usage and is not efficient
+  //   this.calcAge = function () {
+  //     console.log(2025 - this.birthYear);
+  //   };
+};
+Person.prototype.calcAge = function () {
+  console.log(2025 - this.birthYear);
+};
+*/
+const Student = function (firstName, birthYear, course) {
+  // Person(firstName, birthYear); // error because regular function does not have 'this' context in global scope (strict mode)
+  // call the Person constructor function with the current context (this)
+  Person.call(this, firstName, birthYear); // this will set 'this' to the new object created by the Student constructor function
+  this.course = course;
+};
+
+// we can set the prototype of Student to be an instance of Person
+// we have to do this before adding methods to the Student prototype
+Student.prototype = Object.create(Person.prototype);
+
+Student.prototype.introduce = function () {
+  console.log(
+    `Hello, my name is ${this.firstName} and I study ${this.course}.`,
+  );
+};
+
+const edward = new Student('Edward', 1998, 'Computer Science');
+console.log(edward); // Student { firstName: 'Edward', birthYear: 1998, course: 'Computer Science' }
+edward.introduce(); // Hello, my name is Edward and I study Computer Science.
+edward.calcAge(); // 27
+
+console.log(edward.__proto__); // Student.prototype
+console.log(edward.__proto__.__proto__); // Person.prototype
+console.log(edward.__proto__.__proto__ === Person.prototype); // true
+
+console.log(edward instanceof Student); // true
+console.log(edward instanceof Person); // true
+console.log(edward instanceof Object); // true
+
+Student.prototype.constructor = Student; // we have to set the constructor property back to Student
+/////////////////////////////////////////////
+// ES6 Classes with Inheritance
+class StudentCl extends PersonCl {
+  // extends keyword is used to inherit from another class
+  constructor(fullName, birthYear, course) {
+    // call the parent constructor with the current context (this)
+    // super is a special keyword that calls the parent constructor
+    super(fullName, birthYear); // this will set 'this' to the new object created by the StudentCl constructor function
+    // super keyword must be called before using 'this' in the constructor because it initializes the 'this' context
+    this.course = course;
+  }
+
+  // instance method
+  introduce() {
+    console.log(
+      `Hello, my name is ${this.fullName} and I study ${this.course}.`,
+    );
+  }
+
+  // overriding the calcAge method from the parent class
+  calcAge() {
+    console.log(
+      `I'm ${2025 - this.birthYear} years old and I feel more like ${2025 - this.birthYear + 10} years old.`,
+    );
+  }
+}
+
+const charlie = new StudentCl('Charlie Brown', 2000, 'Mathematics');
+console.log(charlie); // StudentCl { fullName: 'Charlie Brown', birthYear: 2000, course: 'Mathematics' }
+charlie.introduce(); // Hello, my name is Charlie Brown and I study Mathematics.
+charlie.calcAge(); // 25
+////////////////////////////////////////////
+// Object.create() with Inheritance
+const jake = Object.create(personProto);
+
+const StudentProto = Object.create(personProto);
+
+StudentProto.init = function (firstName, birthYear, course) {
+  personProto.init.call(this, firstName, birthYear); // call the parent init method
+  this.course = course;
+};
+StudentProto.introduce = function () {
+  console.log(
+    `Hello, my name is ${this.firstName} and I study ${this.course}.`,
+  );
+};
+StudentProto.calcAge = function () {
+  console.log(2025 - this.birthYear);
+};
+
+const kate = Object.create(StudentProto);
+kate.init('Kate', 1999, 'Physics');
+console.log(kate); // { firstName: 'Kate', birthYear: 1999, course: 'Physics' }
+kate.introduce(); // Hello, my name is Kate and I study Physics.
+kate.calcAge(); // 26
