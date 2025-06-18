@@ -374,3 +374,82 @@ kate.init('Kate', 1999, 'Physics');
 console.log(kate); // { firstName: 'Kate', birthYear: 1999, course: 'Physics' }
 kate.introduce(); // Hello, my name is Kate and I study Physics.
 kate.calcAge(); // 26
+////////////////////////////////////////
+// Anohter class example
+// 1) public (instance) fields -> these fields will not get inherited by the instances of the class
+// 2) private fields -> it can't be accessed outside the class
+// 3) public methods
+// 4) private methods
+// static methods of these 4
+
+// field is like a property, but it is defined in the class body
+class Account {
+  // these are same as initializing properties in the constructor
+  locale = navigator.language;
+  bank = 'Bank of JS';
+  #movements = []; // private field, it cannot be accessed outside the class
+  #pin; // variable with let
+
+  constructor(owner, currency, pin) {
+    this.owner = owner;
+    this.currency = currency;
+    this.#pin = pin;
+    // this.locale = navigator.language; // get the user's locale from the browser
+    console.log(`Thanks for opening an account, ${this.owner}!`);
+  }
+
+  // public interface (API)
+  getMovements() {
+    return this.#movements;
+    // not chainable
+  }
+
+  deposit(val) {
+    this.#movements.push(val);
+    return this; // return the instance to allow method chaining
+  }
+
+  withdraw(val) {
+    this.deposit(-val);
+    return this; // return the instance to allow method chaining
+  }
+
+  #approveLoan(val) {
+    // fake approval logic
+    return true;
+  }
+
+  requestLoan(val) {
+    if (this.#approveLoan(val)) {
+      this.deposit(val);
+      console.log(`Loan of ${val} approved!`);
+    }
+    return this; // return the instance to allow method chaining
+  }
+}
+
+const acc1 = new Account('Diane', 'EUR', 1111);
+console.log(acc1); // Account { owner: 'Diane', currency: 'EUR', pin: 1111 }
+
+// deposit value
+// acc1.movements.push(200);
+// console.log();
+acc1.deposit(200);
+acc1.withdraw(450);
+acc1.requestLoan(1000);
+// acc1.approveLoan(1000);
+
+console.log(acc1);
+// console.log(acc1.#movements); // Uncaught SyntaxError: Private field '#movements' must be declared in an enclosing class
+////////////////////////////
+// Chaining methods
+// we can chain methods by returning the instance from the methods
+// these methods need to be called on the instance
+const movements = acc1
+  .deposit(300)
+  .withdraw(100)
+  .deposit(100)
+  .requestLoan(500)
+  .getMovements();
+
+console.log(movements);

@@ -791,7 +791,7 @@ StudentProto.calcAge = function () {
 };
 ```
 
-- We manually define your methods on the prototype object
+- We manually define methods on the prototype object
 
 ```js
 const kate = Object.create(StudentProto);
@@ -806,3 +806,124 @@ kate.calcAge(); // 26
   - Which itself delegates to `personProto`
 
 - This is the most **low-level**, explicit form of prototype-based inheritance in JS.
+
+## Encapsulation
+
+### Definition
+
+- Encapsulation means keeping certain **data (properties)** and **logic (methods)** **private** inside a class
+- The goal is to **protect internal state and behavior**, so they **can’t be accessed or modified from outside** the class
+- Instead, we expose specific methods for interaction — this becomes the **public API** of class
+
+### Why Encapsulation?
+
+- To **prevent accidental data corruption** from outside code
+- To make the class **easier to maintain and update**, since internal logic can change without affecting external code
+- To **clearly separate what’s internal vs. external**
+
+### Note
+
+JavaScript was originally a **prototype-based** language, not class-based like Java or C++
+However, with the introduction of modern features like `class`, `#private`, etc., JavaScript now supports class-style encapsulation too
+
+### Example
+
+```js
+class Account {
+  // Public fields (not in constructor, declared directly in class body)
+  locale = navigator.language;
+  bank = 'Bank of JS';
+
+  // Private fields: these start with '#' and are only accessible inside the class
+  #movements = [];
+  #pin;
+
+  constructor(owner, currency, pin) {
+    this.owner = owner;       // Public property
+    this.currency = currency; // Public property
+    this.#pin = pin;          // Private field
+    console.log(`Thanks for opening an account, ${this.owner}!`);
+  }
+```
+
+```js
+  // Public method: exposes private data safely
+  getMovements() {
+    return this.#movements;
+  }
+
+  // Public method: allows deposits
+  deposit(val) {
+    this.#movements.push(val);
+  }
+
+  // Public method: allows withdrawals by depositing negative values
+  withdraw(val) {
+    this.deposit(-val);
+  }
+
+  // Private method: can't be accessed from outside the class
+  #approveLoan(val) {
+    // Internal logic to approve loans (fake in this case)
+    return true;
+  }
+
+  // Public method that uses private logic internally
+  requestLoan(val) {
+    if (this.#approveLoan(val)) {
+      this.deposit(val);
+      console.log(`Loan of ${val} approved!`);
+    }
+  }
+}
+```
+
+```js
+const acc1 = new Account('Diane', 'EUR', 1111);
+console.log(acc1);
+// Account {
+//   owner: 'Diane',
+//   currency: 'EUR',
+//   locale: 'en-US',
+//   bank: 'Bank of JS',
+//   #movements: [...],
+//   #pin: ...
+// }
+```
+
+```js
+acc1.deposit(200);
+acc1.withdraw(450);
+acc1.requestLoan(1000);
+```
+
+- These methods work because they are **public** and defined in the class
+- Internally, they use and modify the **private fields** like `#movements` and `#pin`
+
+```js
+acc1.approveLoan(1000);
+// Error: Cannot access private method '#approveLoan' from outside the class
+```
+
+```js
+console.log(acc1.#movements);
+// SyntaxError: Private field '#movements' must be declared in an enclosing class
+```
+
+- These lines throw errors as trying to access a **private field/method** from outside the class, which is not allowed
+
+## Chaining methods
+
+- we can chain methods by returning the instance from the methods
+- These methods need to be called on the instance
+
+```js
+const movements = acc1
+  .deposit(300)
+  .withdraw(100)
+  .deposit(100)
+  .requestLoan(500)
+  .getMovements();
+
+console.log(movements);
+```
