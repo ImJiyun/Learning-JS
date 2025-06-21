@@ -11,4 +11,6 @@ This is a repository for practicing Javascript. The course is from [The Complete
 [11. Arrays](/11-Arrays-Bankist/README.md) <br/>
 [12. Numbers & Dates & Timers](/12-Numbers-Dates-Timers-Bankist/README.md) <br/>
 [13. Advanced DOM](/13-Advanced-DOM-Bankist/README.md) <br/>
+[14. Object Oriented Programming](/14-OOP/README.md) <br/>
+[15. Geolocation API](/15-Mapty/README.md) <br/>
 [16. Asynchronous JavaScript](/16-Asynchronous/README.md) <br/>
