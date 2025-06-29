@@ -14,3 +14,4 @@ This is a repository for practicing Javascript. The course is from [The Complete
 [14. Object Oriented Programming](/14-OOP/README.md) <br/>
 [15. Geolocation API](/15-Mapty/README.md) <br/>
 [16. Asynchronous JavaScript](/16-Asynchronous/README.md) <br/>
+[17. Modern JS Modules](/17-Modern-JS-Modules-Tooling/README.md) <br/>
